@@ -5,11 +5,23 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  specialty: UserSpecialty;
   avatarUrl?: string;
 }
 
-/** Roles that have full financial visibility */
-export const ADMIN_ROLES: UserRole[] = ['gerente', 'administradora'];
+/**
+ * Maps each role to its clinical specialty scope.
+ * - 'all' → can see both treatment categories
+ * - 'medico-no-invasivo' → only medical procedures
+ * - 'corporal-cosmetologia' → only body/cosmetic services
+ * - 'none' → no clinical scope (admin only)
+ */
+export type UserSpecialty = 'all' | 'medico-no-invasivo' | 'corporal-cosmetologia' | 'none';
 
-/** Roles that are limited to clinical views only */
-export const CLINICAL_ROLES: UserRole[] = ['medico', 'cosmetologa'];
+/** Human-readable labels */
+export const ROLE_LABELS: Record<UserRole, string> = {
+  gerente: 'Gerente',
+  administradora: 'Administradora',
+  medico: 'Médico',
+  cosmetologa: 'Cosmetóloga',
+};
