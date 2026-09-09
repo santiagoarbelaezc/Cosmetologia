@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.component';
 import { AuthService } from '../../core/services/auth.service';
+import { ROLE_LABELS } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -75,18 +76,28 @@ import { AuthService } from '../../core/services/auth.service';
               Iniciar Sesión
             </button>
 
-            <!-- Quick Role Selector (Demo) -->
+            <!-- Quick Access (Demo Only) -->
             <div class="mt-6 pt-6 border-t border-zinc-100">
-              <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-300 text-center mb-3">Acceso rápido (demo)</p>
-              <div class="grid grid-cols-2 gap-2">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-300 text-center mb-3">
+                Acceso rápido · Demo
+              </p>
+              <div class="space-y-2">
                 @for (user of authService.getMockUsers(); track user.id) {
                   <button
                     type="button"
                     (click)="quickLogin(user.email)"
-                    class="px-3 py-2 text-xs font-medium text-zinc-500 bg-zinc-50 rounded-xl border border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-700 transition-all duration-200"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50 hover:bg-zinc-100 hover:border-zinc-300 transition-all duration-200 group"
                   >
-                    <span class="block font-semibold text-zinc-700 mb-0.5">{{ user.name.split(' ')[0] }}</span>
-                    <span class="text-[10px] uppercase tracking-wide text-zinc-400">{{ user.role }}</span>
+                    <div class="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-300 transition-colors">
+                      <span class="text-xs font-bold text-zinc-600">{{ user.name.charAt(0) }}</span>
+                    </div>
+                    <div class="text-left flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-zinc-700 truncate">{{ user.name }}</p>
+                      <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ getRoleLabel(user.role) }}</p>
+                    </div>
+                    <svg class="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
                   </button>
                 }
               </div>
@@ -147,12 +158,18 @@ export class LoginComponent {
     if (success) {
       this.router.navigate(['/dashboard']);
     } else {
-      this.errorMessage.set('Credenciales inválidas. Intente de nuevo.');
+      this.errorMessage.set('Credenciales inválidas. Verifique su correo electrónico.');
     }
   }
 
   quickLogin(email: string): void {
-    this.authService.login(email, 'demo');
-    this.router.navigate(['/dashboard']);
+    const success = this.authService.login(email, 'demo');
+    if (success) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  getRoleLabel(role: string): string {
+    return ROLE_LABELS[role as keyof typeof ROLE_LABELS] || role;
   }
 }
