@@ -99,16 +99,10 @@ import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient
                 <p class="micro-label mb-1">Abonos Realizados</p>
                 <p class="text-xl font-bold tracking-tight text-emerald-600">{{ accountBalance().totalPaid | currencyCop }}</p>
               </div>
-              <div class="rounded-xl px-4 py-3.5"
-                   [class.bg-rose-50/80]="accountBalance().pendingBalance > 0"
-                   [class.bg-zinc-50/80]="accountBalance().pendingBalance <= 0"
-              >
+              <div class="rounded-xl px-4 py-3.5" [ngClass]="accountBalance().pendingBalance > 0 ? 'bg-rose-50' : 'bg-zinc-50'">
                 <p class="micro-label mb-1">Saldo Pendiente</p>
                 <div class="flex items-center gap-2">
-                  <p class="text-xl font-bold tracking-tight"
-                     [class.text-rose-600]="accountBalance().pendingBalance > 0"
-                     [class.text-zinc-900]="accountBalance().pendingBalance <= 0"
-                  >
+                  <p class="text-xl font-bold tracking-tight" [ngClass]="accountBalance().pendingBalance > 0 ? 'text-rose-600' : 'text-zinc-900'">
                     {{ accountBalance().pendingBalance | currencyCop }}
                   </p>
                   @if (accountBalance().pendingBalance > 0) {
