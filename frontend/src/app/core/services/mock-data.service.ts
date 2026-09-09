@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Patient, Treatment, ClinicalSession } from '../models/patient.model';
+import { Patient, Treatment, ClinicalSession, MedicalRecord, TreatmentCategory } from '../models/patient.model';
 import { PaymentRecord, ExpenseItem, AccountBalance, FinancialSummary } from '../models/finance.model';
 
 @Injectable({ providedIn: 'root' })
@@ -83,6 +83,18 @@ export class MockDataService {
         { id: 'cs-006', treatmentId: 'trt-003', treatmentName: 'Ácido Hialurónico – Labios y Surcos', sessionNumber: 1, date: '2026-08-10', notes: 'Aplicación en labio superior e inferior. 1ml de ácido hialurónico reticulado. Resultado natural. Control en 15 días.', specialistName: 'Dr. Andrés Castaño', specialistId: 'usr-003' },
         { id: 'cs-007', treatmentId: 'trt-004', treatmentName: 'Limpieza Facial Profunda + Peeling', sessionNumber: 4, date: '2026-08-05', notes: 'Peeling químico superficial con ácido glicólico al 30%. Piel reactiva normal. Indicaciones de protector solar.', specialistName: 'Camila Herrera', specialistId: 'usr-004' },
       ],
+      medicalRecord: {
+        antecedentesMedicos: 'Sin antecedentes patológicos relevantes. Niega cirugías faciales previas.',
+        alergias: 'Alergia estacional leve (polen). Niega alergia a anestésicos locales ni a fármacos.',
+        motivoConsulta: 'Atenuación de líneas de expresión peribucales y aumento sutil de volumen con hidratación en labios.',
+        diagnosticoEstetico: 'Envejecimiento cutáneo Glogau II. Leve pérdida de proyección en bermellón labial y surcos nasogenianos grado 2.',
+        zonasTratamiento: 'Tercio inferior: bermellón labial superior e inferior, y surcos nasogenianos bilaterales.',
+        contraindicaciones: 'Ninguna contraindicación médica detectada para rellenos ni bioestimuladores.',
+        cuidadosPost: 'Aplicar frío local las primeras 6 horas. No masajear intensamente. Evitar sauna, piscina y ejercicio intenso 24h.',
+        registradoPor: 'Dr. Andrés Castaño',
+        fechaRegistro: '2026-02-05',
+        ultimaActualizacion: '2026-08-10',
+      },
     },
     {
       id: 'pat-003',
@@ -411,6 +423,71 @@ export class MockDataService {
               status: updatedCompleted >= t.totalSessions ? 'completed' : t.status,
             };
           }),
+        };
+      })
+    );
+  }
+
+  saveMedicalRecord(patientId: string, record: MedicalRecord): void {
+    this._patients.update(patients =>
+      patients.map(p => {
+        if (p.id !== patientId) return p;
+        return {
+          ...p,
+          medicalRecord: {
+            ...record,
+            ultimaActualizacion: new Date().toISOString().split('T')[0],
+          },
+        };
+      })
+    );
+  }
+
+  prescribeTreatment(
+    patientId: string,
+    treatmentData: {
+      name: string;
+      category: TreatmentCategory;
+      totalSessions: number;
+      totalCost: number;
+      dosage?: string;
+      prescriptionNotes?: string;
+    },
+    doctorName: string,
+    doctorId: string
+  ): void {
+    const newTreatmentId = `trt-${Date.now()}`;
+    const newTreatment: Treatment = {
+      id: newTreatmentId,
+      name: treatmentData.name,
+      category: treatmentData.category,
+      totalSessions: treatmentData.totalSessions,
+      completedSessions: 0,
+      totalCost: treatmentData.totalCost,
+      totalPaid: 0,
+      status: 'active',
+      dosage: treatmentData.dosage,
+      prescriptionNotes: treatmentData.prescriptionNotes,
+    };
+
+    const prescriptionSession: ClinicalSession = {
+      id: `cs-${Date.now()}`,
+      treatmentId: newTreatmentId,
+      treatmentName: treatmentData.name,
+      sessionNumber: 0,
+      date: new Date().toISOString().split('T')[0],
+      notes: `[Formulación Médica]: ${treatmentData.name}. ${treatmentData.dosage ? 'Dosis/Zona: ' + treatmentData.dosage + '. ' : ''}${treatmentData.prescriptionNotes ? 'Indicaciones: ' + treatmentData.prescriptionNotes : ''}`,
+      specialistName: doctorName,
+      specialistId: doctorId,
+    };
+
+    this._patients.update(patients =>
+      patients.map(p => {
+        if (p.id !== patientId) return p;
+        return {
+          ...p,
+          treatments: [newTreatment, ...p.treatments],
+          clinicalHistory: [prescriptionSession, ...p.clinicalHistory],
         };
       })
     );

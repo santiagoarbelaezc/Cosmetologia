@@ -1,3 +1,16 @@
+export interface MedicalRecord {
+  antecedentesMedicos: string;
+  alergias: string;
+  motivoConsulta: string;
+  diagnosticoEstetico: string;
+  zonasTratamiento: string;
+  contraindicaciones?: string;
+  cuidadosPost?: string;
+  registradoPor: string;
+  fechaRegistro: string;
+  ultimaActualizacion?: string;
+}
+
 export interface Patient {
   id: string;
   firstName: string;
@@ -10,6 +23,7 @@ export interface Patient {
   assignedSpecialistId: string;
   treatments: Treatment[];
   clinicalHistory: ClinicalSession[];
+  medicalRecord?: MedicalRecord;
   createdAt: string;
 }
 
@@ -22,6 +36,8 @@ export interface Treatment {
   totalCost: number;
   totalPaid: number;
   status: TreatmentStatus;
+  dosage?: string;
+  prescriptionNotes?: string;
 }
 
 export interface ClinicalSession {

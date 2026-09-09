@@ -10,7 +10,7 @@ import { ProgressBarComponent } from '../../shared/components/progress-bar/progr
 import { PaymentModalComponent, PaymentFormData } from '../../shared/components/payment-modal/payment-modal.component';
 import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
 import { WorkflowDiagramComponent } from '../../shared/components/workflow-diagram/workflow-diagram.component';
-import { Patient, TreatmentCategory, ClinicalSession } from '../../core/models/patient.model';
+import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../../core/models/patient.model';
 
 @Component({
   selector: 'app-patient-detail',
@@ -149,11 +149,24 @@ import { Patient, TreatmentCategory, ClinicalSession } from '../../core/models/p
         <!-- SECCIÓN 3 (VISIBLE): Tratamientos del Paciente            -->
         <!-- ═════════════════════════════════════════════════════════ -->
         <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 class="text-base sm:text-lg font-bold text-zinc-900">Tratamientos Formulados</h2>
               <p class="text-xs text-zinc-400">Sesiones programadas y avance individual</p>
             </div>
+
+            @if (permissions.canPrescribeTreatments()) {
+              <button
+                type="button"
+                (click)="openPrescribeModal()"
+                class="btn-primary text-xs flex items-center gap-1.5 px-3.5 py-2 cursor-pointer shadow-xs self-start sm:self-auto"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>+ Recetar Tratamiento</span>
+              </button>
+            }
           </div>
 
           <!-- Pill tabs: only show if user can see BOTH categories -->
@@ -191,6 +204,18 @@ import { Patient, TreatmentCategory, ClinicalSession } from '../../core/models/p
                   [total]="treatment.totalSessions"
                 />
 
+                <!-- Medical Dosage & Prescription Details -->
+                @if (treatment.dosage || treatment.prescriptionNotes) {
+                  <div class="p-2.5 rounded-lg bg-white/90 border border-zinc-200/70 text-xs text-zinc-600 space-y-1">
+                    @if (treatment.dosage) {
+                      <p><strong class="text-zinc-800 font-semibold">Dosis / Zona:</strong> {{ treatment.dosage }}</p>
+                    }
+                    @if (treatment.prescriptionNotes) {
+                      <p><strong class="text-zinc-800 font-semibold">Receta & Cuidados:</strong> {{ treatment.prescriptionNotes }}</p>
+                    }
+                  </div>
+                }
+
                 <!-- Treatment Financials — Gerente + Administradora only -->
                 @if (permissions.canViewFinancials()) {
                   <div class="flex items-center gap-6 pt-2.5 border-t border-zinc-200/60 text-xs">
@@ -219,6 +244,112 @@ import { Patient, TreatmentCategory, ClinicalSession } from '../../core/models/p
               </div>
             }
           </div>
+        </section>
+
+        <!-- ═════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN: Historia Clínica Médica & Diagnóstico            -->
+        <!-- ═════════════════════════════════════════════════════════ -->
+        <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
+          <div class="px-6 py-5 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-zinc-950 text-white flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Historia Clínica Médica & Diagnóstico</h3>
+                <p class="text-xs text-zinc-400">Anamnesis, antecedentes clínicos y evaluación médico-estética</p>
+              </div>
+            </div>
+
+            @if (permissions.canCreateMedicalRecord()) {
+              <button
+                type="button"
+                (click)="openMedicalRecordModal()"
+                class="btn-primary text-xs px-3.5 py-2 cursor-pointer shadow-xs self-start sm:self-auto"
+              >
+                {{ p.medicalRecord ? 'Editar Historia Clínica' : '+ Crear Historia Clínica' }}
+              </button>
+            }
+          </div>
+
+          <!-- Contenido Ficha Clínica -->
+          @if (p.medicalRecord; as rec) {
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Motivo de Consulta -->
+                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Motivo de Consulta</span>
+                  <p class="text-xs sm:text-sm font-semibold text-zinc-800 leading-relaxed">{{ rec.motivoConsulta }}</p>
+                </div>
+
+                <!-- Diagnóstico Estético -->
+                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Diagnóstico Dérmico / Estético</span>
+                  <p class="text-xs sm:text-sm font-semibold text-zinc-800 leading-relaxed">{{ rec.diagnosticoEstetico }}</p>
+                </div>
+
+                <!-- Antecedentes Médicos -->
+                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Antecedentes Médicos & Quirúrgicos</span>
+                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.antecedentesMedicos }}</p>
+                </div>
+
+                <!-- Alergias -->
+                <div class="p-4 rounded-xl border space-y-1" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'bg-amber-50/70 border-amber-200/90' : 'bg-zinc-50 border-zinc-200/70'">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-700' : 'text-zinc-400'">Alergias Identificadas</span>
+                    @if (rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega')) {
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    }
+                  </div>
+                  <p class="text-xs font-semibold leading-relaxed" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-900' : 'text-zinc-700'">{{ rec.alergias }}</p>
+                </div>
+
+                <!-- Zonas de Tratamiento -->
+                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Zonas Anatómicas a Tratar</span>
+                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.zonasTratamiento }}</p>
+                </div>
+
+                <!-- Recomendaciones y Cuidados Post -->
+                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cuidados & Recomendaciones</span>
+                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.cuidadosPost || 'Sin cuidados especiales registrados.' }}</p>
+                </div>
+              </div>
+
+              <!-- Footer firma médica -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-zinc-100 text-xs text-zinc-400">
+                <span>Registrado por: <strong class="text-zinc-700">{{ rec.registradoPor }}</strong> ({{ rec.fechaRegistro | date:'d MMM yyyy' }})</span>
+                @if (rec.ultimaActualizacion) {
+                  <span>Última actualización: {{ rec.ultimaActualizacion | date:'d MMM yyyy' }}</span>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="p-8 text-center space-y-3">
+              <div class="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold text-zinc-800">Sin Historia Clínica Médica Registrada</h4>
+              <p class="text-xs text-zinc-400 max-w-md mx-auto">
+                El paciente aún no cuenta con antecedentes ni diagnóstico médico-estético documentado.
+              </p>
+              @if (permissions.canCreateMedicalRecord()) {
+                <button
+                  type="button"
+                  (click)="openMedicalRecordModal()"
+                  class="btn-primary text-xs px-4 py-2 mt-1 cursor-pointer"
+                >
+                  + Crear Historia Clínica Ahora
+                </button>
+              }
+            </div>
+          }
         </section>
 
         <!-- ═════════════════════════════════════════════════════════ -->
@@ -473,6 +604,291 @@ import { Patient, TreatmentCategory, ClinicalSession } from '../../core/models/p
           (modalClose)="showPaymentModal.set(false)"
           (paymentSubmit)="onPaymentSubmit($event)"
         />
+      }
+
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- MODAL: Crear / Editar Historia Clínica Médica            -->
+      <!-- ═════════════════════════════════════════════════════════ -->
+      @if (showMedicalRecordModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div class="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-3xl shadow-2xl space-y-5 animate-slide-up">
+            
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-4">
+              <div>
+                <h3 class="text-lg font-bold text-zinc-900">
+                  {{ p.medicalRecord ? 'Editar Historia Clínica Médica' : 'Crear Historia Clínica Médica' }}
+                </h3>
+                <p class="text-xs text-zinc-400">Paciente: {{ p.firstName }} {{ p.lastName }} · Doc: {{ p.documentId }}</p>
+              </div>
+              <button
+                type="button"
+                (click)="closeMedicalRecordModal()"
+                class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form (ngSubmit)="saveMedicalRecord()" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Motivo de Consulta -->
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Motivo de Consulta Médico-Estética *</label>
+                  <textarea
+                    [(ngModel)]="medicalRecordForm.motivoConsulta"
+                    name="motivoConsulta"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Desea atenuar arrugas de expresión en frente y entrecejo..."
+                    required
+                  ></textarea>
+                </div>
+
+                <!-- Diagnóstico Estético -->
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Diagnóstico Dérmico / Facial / Corporal *</label>
+                  <textarea
+                    [(ngModel)]="medicalRecordForm.diagnosticoEstetico"
+                    name="diagnosticoEstetico"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Fotoenvejecimiento Glogau II, líneas dinámicas frontales..."
+                    required
+                  ></textarea>
+                </div>
+
+                <!-- Antecedentes Médicos -->
+                <div>
+                  <label class="label text-xs">Antecedentes Médicos / Quirúrgicos *</label>
+                  <textarea
+                    [(ngModel)]="medicalRecordForm.antecedentesMedicos"
+                    name="antecedentesMedicos"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Enfermedades crónicas, cirugías previas, medicamentos..."
+                    required
+                  ></textarea>
+                </div>
+
+                <!-- Alergias -->
+                <div>
+                  <label class="label text-xs">Alergias Identificadas *</label>
+                  <textarea
+                    [(ngModel)]="medicalRecordForm.alergias"
+                    name="alergias"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Alergias a fármacos, anestésicos locales, látex o niega..."
+                    required
+                  ></textarea>
+                </div>
+
+                <!-- Zonas Anatómicas a Tratar -->
+                <div>
+                  <label class="label text-xs">Zonas Anatómicas de Intervención *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="medicalRecordForm.zonasTratamiento"
+                    name="zonasTratamiento"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Tercio superior facial (frente, entrecejo, periocular)"
+                    required
+                  />
+                </div>
+
+                <!-- Contraindicaciones -->
+                <div>
+                  <label class="label text-xs">Contraindicaciones / Advertencias</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="medicalRecordForm.contraindicaciones"
+                    name="contraindicaciones"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Ninguna detectada / Embarazo o lactancia descartados"
+                  />
+                </div>
+
+                <!-- Cuidados Post-Procedimiento -->
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Recomendaciones & Cuidados Post-Procedimiento</label>
+                  <textarea
+                    [(ngModel)]="medicalRecordForm.cuidadosPost"
+                    name="cuidadosPost"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Evitar masajes en la zona tratada por 4h, usar protector solar FPS 50+..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+                <button
+                  type="button"
+                  (click)="closeMedicalRecordModal()"
+                  class="btn-ghost text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn-primary text-xs px-5 py-2.5 cursor-pointer"
+                  [disabled]="!medicalRecordForm.motivoConsulta.trim() || !medicalRecordForm.diagnosticoEstetico.trim()"
+                >
+                  Guardar Historia Clínica
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      }
+
+      <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- MODAL: Recetar & Formular Tratamiento                     -->
+      <!-- ═════════════════════════════════════════════════════════ -->
+      @if (showPrescribeModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div class="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-3xl shadow-2xl space-y-5 animate-slide-up">
+            
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-zinc-900">Formular & Recetar Tratamiento</h3>
+                  <p class="text-xs text-zinc-400">Prescripción clínica para {{ p.firstName }} {{ p.lastName }}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="closePrescribeModal()"
+                class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <!-- Presets Rápidos de Procedimientos Médicos -->
+            <div>
+              <label class="label text-[11px] uppercase tracking-wider text-zinc-400 font-bold mb-2">
+                Procedimientos Médicos Sugeridos (Clic para autocompletar):
+              </label>
+              <div class="flex flex-wrap gap-1.5">
+                @for (preset of prescriptionPresets; track preset.name) {
+                  <button
+                    type="button"
+                    (click)="selectPrescriptionPreset(preset)"
+                    class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer"
+                    [ngClass]="prescribeForm.name === preset.name ? 'bg-zinc-950 text-white border-zinc-950' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-700'"
+                  >
+                    {{ preset.name }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Formulario de Prescripción -->
+            <form (ngSubmit)="submitPrescription()" class="space-y-4 pt-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Nombre del Tratamiento *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="prescribeForm.name"
+                    name="name"
+                    class="input-premium text-xs"
+                    placeholder="Ej: Toxina Botulínica – Tercio Superior"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="label text-xs">Categoría Clínica *</label>
+                  <select
+                    [(ngModel)]="prescribeForm.category"
+                    name="category"
+                    class="input-premium text-xs"
+                    required
+                  >
+                    <option value="medico-no-invasivo">Procedimiento Médico No Invasivo</option>
+                    <option value="corporal-cosmetologia">Corporal / Cosmetología Complementaria</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label text-xs">Sesiones Programadas *</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="prescribeForm.totalSessions"
+                    name="totalSessions"
+                    min="1"
+                    max="30"
+                    class="input-premium text-xs"
+                    required
+                  />
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Dosis, Unidades & Zonas Anatómicas *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="prescribeForm.dosage"
+                    name="dosage"
+                    class="input-premium text-xs"
+                    placeholder="Ej: 50 unidades Dysport en frente, entrecejo y periocular"
+                    required
+                  />
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Receta de Cuidados & Advertencias Post-Tratamiento *</label>
+                  <textarea
+                    [(ngModel)]="prescribeForm.prescriptionNotes"
+                    name="prescriptionNotes"
+                    rows="2"
+                    class="input-premium text-xs"
+                    placeholder="Ej: No acostarse en 4 horas. Aplicar protector solar cada 3h. Cita de control en 15 días."
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label text-xs">Honorarios / Costo Total del Tratamiento ($ COP) *</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="prescribeForm.totalCost"
+                    name="totalCost"
+                    step="50000"
+                    min="0"
+                    class="input-premium text-xs"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+                <button
+                  type="button"
+                  (click)="closePrescribeModal()"
+                  class="btn-ghost text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn-primary text-xs px-5 py-2.5 cursor-pointer shadow-xs"
+                  [disabled]="!prescribeForm.name.trim() || prescribeForm.totalSessions < 1"
+                >
+                  Emitir Receta & Formular
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
       }
     } @else {
       <!-- Patient Not Found -->
