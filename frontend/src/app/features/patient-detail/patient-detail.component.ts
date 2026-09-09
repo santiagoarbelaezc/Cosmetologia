@@ -87,138 +87,123 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
           </div>
         </section>
 
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 1 (VISIBLE): Diagrama Clínico de Flujo (Workflow) -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <section>
-          <app-workflow-diagram [patient]="p" />
-        </section>
-
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 2 (VISIBLE): Estado de Cuenta (Gerente & Admin)   -->
-        <!-- ═════════════════════════════════════════════════════════ -->
         @if (permissions.canViewFinancials()) {
-          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl">
-            <div class="flex items-center justify-between mb-4">
+          <!-- ═════════════════════════════════════════════════════════ -->
+          <!-- VISTA GERENTE & ADMINISTRADORA                            -->
+          <!-- 1. Diagrama Clínico de Flujo (Visible arriba)             -->
+          <!-- 2. Estado de Cuenta & Cartera (Arriba)                    -->
+          <!-- 3. Tratamientos y Avance (con Costos y Abonos)            -->
+          <!-- 4. Historia del Paciente (Modo Lectura)                   -->
+          <!-- 5. Historial de Procedimientos (Modo Lectura)             -->
+          <!-- ═════════════════════════════════════════════════════════ -->
+
+          <!-- 1. DIAGRAMA CLÍNICO (VISIBLE ARRIBA) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center gap-3 border-b border-zinc-100 pb-3">
+              <div class="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+                </svg>
+              </div>
               <div>
-                <h2 class="text-base sm:text-lg font-bold text-zinc-900">Estado de Cuenta & Cartera</h2>
-                <p class="text-xs text-zinc-400">Balance financiero del plan terapéutico</p>
+                <h3 class="text-base font-bold text-zinc-900">Diagrama Clínico de Flujo</h3>
+                <p class="text-xs text-zinc-400">Progreso general por etapas del paciente</p>
+              </div>
+            </div>
+            <app-workflow-diagram [patient]="p" />
+          </section>
+
+          <!-- 2. ESTADO DE CUENTA & CARTERA (ARRIBA) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Estado de Cuenta & Cartera</h3>
+                <p class="text-xs text-zinc-400">Balance financiero y cuentas por cobrar</p>
               </div>
               @if (permissions.canRegisterPayment()) {
-                <button (click)="showPaymentModal.set(true)" class="btn-primary text-xs px-4 py-2">
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
+                <button (click)="showPaymentModal.set(true)" class="btn-primary text-xs px-3.5 py-2 cursor-pointer shadow-xs">
                   Registrar Abono
                 </button>
               }
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="bg-zinc-50 border border-zinc-200/70 rounded-xl px-4 py-3.5">
-                <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Costo Total</span>
-                <p class="text-xl font-bold tracking-tight text-zinc-900 my-0.5">{{ accountBalance().totalCost | currencyCop }}</p>
-                <p class="text-[11px] text-zinc-400">Valor de tratamientos formulados</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="bg-zinc-50 border border-zinc-200/70 rounded-xl px-4 py-3">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Costo Total</span>
+                <p class="text-lg font-bold text-zinc-900 mt-0.5">{{ accountBalance().totalCost | currencyCop }}</p>
               </div>
-
-              <div class="bg-zinc-50 border border-zinc-200/70 rounded-xl px-4 py-3.5">
-                <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Abonos Realizados</span>
-                <p class="text-xl font-bold tracking-tight text-emerald-600 my-0.5">{{ accountBalance().totalPaid | currencyCop }}</p>
-                <p class="text-[11px] text-zinc-400">Recaudado en caja</p>
+              <div class="bg-zinc-50 border border-zinc-200/70 rounded-xl px-4 py-3">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Abonos</span>
+                <p class="text-lg font-bold text-emerald-600 mt-0.5">{{ accountBalance().totalPaid | currencyCop }}</p>
               </div>
+              <div class="rounded-xl px-4 py-3 border" [ngClass]="accountBalance().pendingBalance > 0 ? 'bg-rose-50 border-rose-200' : 'bg-zinc-50 border-zinc-200/70'">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Pendiente</span>
+                <p class="text-lg font-bold mt-0.5" [ngClass]="accountBalance().pendingBalance > 0 ? 'text-rose-600' : 'text-zinc-900'">
+                  {{ accountBalance().pendingBalance | currencyCop }}
+                </p>
+              </div>
+            </div>
 
-              <div class="rounded-xl px-4 py-3.5 border" [ngClass]="accountBalance().pendingBalance > 0 ? 'bg-rose-50 border-rose-200' : 'bg-zinc-50 border-zinc-200/70'">
-                <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Saldo Pendiente</span>
-                <div class="flex items-center gap-2 my-0.5">
-                  <p class="text-xl font-bold tracking-tight" [ngClass]="accountBalance().pendingBalance > 0 ? 'text-rose-600' : 'text-zinc-900'">
-                    {{ accountBalance().pendingBalance | currencyCop }}
-                  </p>
-                  @if (accountBalance().pendingBalance > 0) {
-                    <span class="badge-pending text-[10px]">Por Cobrar</span>
-                  } @else {
-                    <span class="badge-completed text-[10px]">Al día</span>
+            @if (patientPayments().length > 0) {
+              <div class="pt-3 border-t border-zinc-100">
+                <h4 class="text-xs font-bold text-zinc-700 mb-2">Recibos Emitidos</h4>
+                <div class="space-y-1.5">
+                  @for (pay of patientPayments(); track pay.id) {
+                    <div class="flex items-center justify-between text-xs p-2.5 bg-zinc-50 rounded-lg">
+                      <span class="font-bold text-zinc-800">{{ pay.id }} · {{ pay.method }}</span>
+                      <span class="text-zinc-400">{{ pay.date | date:'d MMM yyyy' }}</span>
+                      <span class="font-bold text-emerald-600">{{ pay.amount | currencyCop }}</span>
+                    </div>
                   }
                 </div>
-                <p class="text-[11px] text-zinc-400">Cuentas por cobrar</p>
+              </div>
+            }
+          </section>
+
+          <!-- 3. TRATAMIENTOS DEL PACIENTE (CON COSTOS Y ABONOS) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Tratamientos del Paciente</h3>
+                <p class="text-xs text-zinc-400">Avance de sesiones y desglose económico</p>
               </div>
             </div>
-          </section>
-        }
 
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 3 (VISIBLE): Tratamientos del Paciente            -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 class="text-base sm:text-lg font-bold text-zinc-900">Tratamientos Formulados</h2>
-              <p class="text-xs text-zinc-400">Sesiones programadas y avance individual</p>
-            </div>
-
-            @if (permissions.canPrescribeTreatments()) {
-              <button
-                type="button"
-                (click)="openPrescribeModal()"
-                class="btn-primary text-xs flex items-center gap-1.5 px-3.5 py-2 cursor-pointer shadow-xs self-start sm:self-auto"
-              >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                <span>+ Recetar Tratamiento</span>
-              </button>
-            }
-          </div>
-
-          <!-- Pill tabs: only show if user can see BOTH categories -->
-          @if (availableTabs().length > 1) {
-            <div>
-              <app-pill-tabs
-                [tabs]="availableTabs()"
-                [activeTab]="activeCategory()"
-                (tabChange)="activeCategory.set($event)"
-              />
-            </div>
-          }
-
-          <div class="space-y-3 pt-1">
-            @for (treatment of filteredTreatments(); track treatment.id) {
-              <div class="p-4 bg-zinc-50 border border-zinc-200/80 rounded-xl space-y-3">
-                <div class="flex items-start justify-between">
-                  <div class="min-w-0 flex-1 mr-4">
-                    <h3 class="text-sm font-bold text-zinc-900">{{ treatment.name }}</h3>
-                    <p class="text-xs text-zinc-400 mt-0.5">
-                      {{ treatment.category === 'corporal-cosmetologia' ? 'Corporal / Cosmetología' : 'Procedimiento Médico Especializado' }}
-                    </p>
-                  </div>
-                  <span
-                    [ngClass]="treatment.status === 'active' ? 'badge-active' :
-                               treatment.status === 'completed' ? 'badge-completed' : 'badge-paused'"
-                  >
-                    {{ treatment.status === 'active' ? 'En Curso' :
-                       treatment.status === 'completed' ? 'Completado' : 'Pausado' }}
-                  </span>
-                </div>
-
-                <app-progress-bar
-                  [current]="treatment.completedSessions"
-                  [total]="treatment.totalSessions"
+            @if (availableTabs().length > 1) {
+              <div>
+                <app-pill-tabs
+                  [tabs]="availableTabs()"
+                  [activeTab]="activeCategory()"
+                  (tabChange)="activeCategory.set($event)"
                 />
+              </div>
+            }
 
-                <!-- Medical Dosage & Prescription Details -->
-                @if (treatment.dosage || treatment.prescriptionNotes) {
-                  <div class="p-2.5 rounded-lg bg-white/90 border border-zinc-200/70 text-xs text-zinc-600 space-y-1">
-                    @if (treatment.dosage) {
-                      <p><strong class="text-zinc-800 font-semibold">Dosis / Zona:</strong> {{ treatment.dosage }}</p>
-                    }
-                    @if (treatment.prescriptionNotes) {
-                      <p><strong class="text-zinc-800 font-semibold">Receta & Cuidados:</strong> {{ treatment.prescriptionNotes }}</p>
-                    }
+            <div class="space-y-3 pt-1">
+              @for (treatment of filteredTreatments(); track treatment.id) {
+                <div class="p-3.5 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-2.5">
+                  <div class="flex items-start justify-between">
+                    <div class="min-w-0 flex-1 mr-3">
+                      <h4 class="text-xs sm:text-sm font-bold text-zinc-900">{{ treatment.name }}</h4>
+                      <p class="text-[11px] text-zinc-400 mt-0.5">
+                        {{ treatment.category === 'corporal-cosmetologia' ? 'Corporal / Cosmetología' : 'Procedimiento Médico Especializado' }}
+                      </p>
+                    </div>
+                    <span
+                      [ngClass]="treatment.status === 'active' ? 'badge-active' :
+                                 treatment.status === 'completed' ? 'badge-completed' : 'badge-paused'"
+                    >
+                      {{ treatment.status === 'active' ? 'En Curso' :
+                         treatment.status === 'completed' ? 'Completado' : 'Pausado' }}
+                    </span>
                   </div>
-                }
 
-                <!-- Treatment Financials — Gerente + Administradora only -->
-                @if (permissions.canViewFinancials()) {
-                  <div class="flex items-center gap-6 pt-2.5 border-t border-zinc-200/60 text-xs">
+                  <app-progress-bar
+                    [current]="treatment.completedSessions"
+                    [total]="treatment.totalSessions"
+                  />
+
+                  <div class="flex items-center gap-6 pt-2 border-t border-zinc-200/60 text-xs">
                     <div>
                       <span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Costo</span>
                       <p class="font-bold text-zinc-800">{{ treatment.totalCost | currencyCop }}</p>
@@ -227,324 +212,140 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
                       <span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Pagado</span>
                       <p class="font-bold text-emerald-600">{{ treatment.totalPaid | currencyCop }}</p>
                     </div>
-                    @if (treatment.totalCost - treatment.totalPaid > 0) {
-                      <div>
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Pendiente</span>
-                        <p class="font-bold text-rose-500">{{ treatment.totalCost - treatment.totalPaid | currencyCop }}</p>
-                      </div>
-                    }
                   </div>
-                }
-              </div>
-            }
-
-            @if (filteredTreatments().length === 0) {
-              <div class="text-center py-8">
-                <p class="text-xs text-zinc-400">No hay tratamientos registrados en esta categoría</p>
-              </div>
-            }
-          </div>
-        </section>
-
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN: Historia Clínica Médica & Diagnóstico            -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
-          <div class="px-6 py-5 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-zinc-950 text-white flex items-center justify-center">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                </svg>
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-zinc-900">Historia Clínica Médica & Diagnóstico</h3>
-                <p class="text-xs text-zinc-400">Anamnesis, antecedentes clínicos y evaluación médico-estética</p>
-              </div>
-            </div>
-
-            @if (permissions.canCreateMedicalRecord()) {
-              <button
-                type="button"
-                (click)="openMedicalRecordModal()"
-                class="btn-primary text-xs px-3.5 py-2 cursor-pointer shadow-xs self-start sm:self-auto"
-              >
-                {{ p.medicalRecord ? 'Editar Historia Clínica' : '+ Crear Historia Clínica' }}
-              </button>
-            }
-          </div>
-
-          <!-- Contenido Ficha Clínica -->
-          @if (p.medicalRecord; as rec) {
-            <div class="p-6 space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Motivo de Consulta -->
-                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Motivo de Consulta</span>
-                  <p class="text-xs sm:text-sm font-semibold text-zinc-800 leading-relaxed">{{ rec.motivoConsulta }}</p>
                 </div>
+              }
 
-                <!-- Diagnóstico Estético -->
-                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Diagnóstico Dérmico / Estético</span>
-                  <p class="text-xs sm:text-sm font-semibold text-zinc-800 leading-relaxed">{{ rec.diagnosticoEstetico }}</p>
+              @if (filteredTreatments().length === 0) {
+                <div class="text-center py-6">
+                  <p class="text-xs text-zinc-400">No hay tratamientos en esta categoría</p>
                 </div>
-
-                <!-- Antecedentes Médicos -->
-                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Antecedentes Médicos & Quirúrgicos</span>
-                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.antecedentesMedicos }}</p>
-                </div>
-
-                <!-- Alergias -->
-                <div class="p-4 rounded-xl border space-y-1" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'bg-amber-50/70 border-amber-200/90' : 'bg-zinc-50 border-zinc-200/70'">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-700' : 'text-zinc-400'">Alergias Identificadas</span>
-                    @if (rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega')) {
-                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    }
-                  </div>
-                  <p class="text-xs font-semibold leading-relaxed" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-900' : 'text-zinc-700'">{{ rec.alergias }}</p>
-                </div>
-
-                <!-- Zonas de Tratamiento -->
-                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Zonas Anatómicas a Tratar</span>
-                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.zonasTratamiento }}</p>
-                </div>
-
-                <!-- Recomendaciones y Cuidados Post -->
-                <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-1">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cuidados & Recomendaciones</span>
-                  <p class="text-xs text-zinc-700 leading-relaxed">{{ rec.cuidadosPost || 'Sin cuidados especiales registrados.' }}</p>
-                </div>
-              </div>
-
-              <!-- Footer firma médica -->
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-zinc-100 text-xs text-zinc-400">
-                <span>Registrado por: <strong class="text-zinc-700">{{ rec.registradoPor }}</strong> ({{ rec.fechaRegistro | date:'d MMM yyyy' }})</span>
-                @if (rec.ultimaActualizacion) {
-                  <span>Última actualización: {{ rec.ultimaActualizacion | date:'d MMM yyyy' }}</span>
-                }
-              </div>
-            </div>
-          } @else {
-            <div class="p-8 text-center space-y-3">
-              <div class="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-              </div>
-              <h4 class="text-sm font-bold text-zinc-800">Sin Historia Clínica Médica Registrada</h4>
-              <p class="text-xs text-zinc-400 max-w-md mx-auto">
-                El paciente aún no cuenta con antecedentes ni diagnóstico médico-estético documentado.
-              </p>
-              @if (permissions.canCreateMedicalRecord()) {
-                <button
-                  type="button"
-                  (click)="openMedicalRecordModal()"
-                  class="btn-primary text-xs px-4 py-2 mt-1 cursor-pointer"
-                >
-                  + Crear Historia Clínica Ahora
-                </button>
               }
             </div>
-          }
-        </section>
+          </section>
 
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 4 (COLAPSIBLE): Historial de Evolución Clínica    -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
-          <!-- Toggle Button Header -->
-          <button
-            type="button"
-            (click)="toggleEvolutionHistory()"
-            class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-zinc-50/60 transition-colors cursor-pointer"
-          >
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-700">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-              </div>
-              <div>
-                <h3 class="text-sm sm:text-base font-bold text-zinc-900">Historial de Evolución Clínica</h3>
-                <p class="text-xs text-zinc-400">Notas de sesión, observaciones médicas y respuesta del paciente</p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
-                {{ visibleHistory().length }} notas registradas
-              </span>
-              <div
-                class="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 transition-transform duration-300"
-                [class.rotate-180]="showEvolutionHistory()"
-              >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              </div>
-            </div>
-          </button>
-
-          <!-- Collapsible Content -->
-          @if (showEvolutionHistory()) {
-            <div class="px-6 pb-6 pt-2 border-t border-zinc-100 animate-fade-in">
-              <div class="relative mt-4">
-                <div class="absolute left-5 top-0 bottom-0 w-px bg-zinc-200"></div>
-
-                <div class="space-y-4">
-                  @for (session of visibleHistory(); track session.id) {
-                    <div class="relative flex gap-4">
-                      <div class="relative z-10 w-10 h-10 rounded-full bg-white border-2 border-zinc-300 flex items-center justify-center flex-shrink-0 shadow-xs">
-                        <span class="text-xs font-bold text-zinc-700">S{{ session.sessionNumber }}</span>
-                      </div>
-                      <div class="card flex-1 p-4 bg-zinc-50 border border-zinc-200/80 rounded-xl">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                          <span class="text-xs font-bold text-zinc-900">{{ session.treatmentName }}</span>
-                          <span class="text-xs text-zinc-400 font-medium">{{ session.date | date:'d MMM yyyy' }}</span>
-                        </div>
-                        <p class="text-xs text-zinc-600 leading-relaxed font-normal">"{{ session.notes }}"</p>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mt-2.5">
-                          Atendido por: {{ session.specialistName }}
-                        </p>
-                      </div>
-                    </div>
-                  }
-
-                  @if (visibleHistory().length === 0) {
-                    <div class="text-center py-8 ml-14">
-                      <p class="text-xs text-zinc-400">Sin notas de evolución aún en esta categoría</p>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-        </section>
-
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 5 (COLAPSIBLE): Registrar Nueva Evolución         -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        @if (permissions.canRegisterEvolution()) {
+          <!-- 4. HISTORIA DEL PACIENTE (CONSULTA / SOLO LECTURA) -->
           <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
-            <!-- Toggle Button Header -->
-            <button
-              type="button"
-              (click)="toggleRegisterEvolution()"
-              class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-zinc-50/60 transition-colors cursor-pointer"
-            >
+            <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                <div class="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-700 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-sm sm:text-base font-bold text-zinc-900">Registrar Nueva Evolución Clínica</h3>
-                  <p class="text-xs text-zinc-400">Añadir nota de sesión y actualización de tratamiento</p>
+                  <h3 class="text-sm sm:text-base font-bold text-zinc-900">Historia del Paciente</h3>
+                  <p class="text-xs text-zinc-400">Anamnesis y diagnóstico dérmico (solo lectura)</p>
                 </div>
               </div>
+            </div>
 
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-zinc-500">
-                  {{ showRegisterEvolution() ? 'Cerrar Formulario' : 'Abrir Formulario' }}
-                </span>
-                <div
-                  class="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 transition-transform duration-300"
-                  [class.rotate-180]="showRegisterEvolution()"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+            @if (p.medicalRecord; as rec) {
+              <div class="p-5 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Motivo de Consulta</span>
+                    <p class="text-xs font-semibold text-zinc-900 leading-snug">{{ rec.motivoConsulta }}</p>
+                  </div>
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Diagnóstico Dérmico / Estético</span>
+                    <p class="text-xs font-semibold text-zinc-900 leading-snug">{{ rec.diagnosticoEstetico }}</p>
+                  </div>
+                  <div class="p-3 border rounded-xl space-y-0.5" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'bg-amber-50/70 border-amber-200' : 'bg-zinc-50 border-zinc-200/70'">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Alergias</span>
+                    <p class="text-xs font-semibold leading-snug text-zinc-800">{{ rec.alergias }}</p>
+                  </div>
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Antecedentes Clínicos</span>
+                    <p class="text-xs text-zinc-700 leading-snug">{{ rec.antecedentesMedicos }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-zinc-100 text-[11px] text-zinc-400">
+                  <span>Registrado por: <strong class="text-zinc-700">{{ rec.registradoPor }}</strong></span>
+                  <span>{{ rec.fechaRegistro | date:'d MMM yyyy' }}</span>
                 </div>
               </div>
-            </button>
-
-            <!-- Collapsible Form -->
-            @if (showRegisterEvolution()) {
-              <div class="px-6 pb-6 pt-4 border-t border-zinc-100 bg-zinc-50/40 animate-fade-in">
-                <form (ngSubmit)="submitEvolution()" class="space-y-4 max-w-2xl">
-                  <div>
-                    <label class="label">Tratamiento Correspondiente</label>
-                    <select
-                      [(ngModel)]="newEvolutionTreatmentId"
-                      name="treatmentId"
-                      class="input-premium text-xs"
-                      required
-                    >
-                      @for (t of visibleTreatments(); track t.id) {
-                        <option [value]="t.id">{{ t.name }} (Sesión {{ t.completedSessions + 1 }}/{{ t.totalSessions }})</option>
-                      }
-                    </select>
-                  </div>
-
-                  <div>
-                    <label class="label">Observaciones & Evolución Clínica</label>
-                    <textarea
-                      [(ngModel)]="newEvolutionNotes"
-                      name="notes"
-                      rows="3"
-                      class="input-premium text-xs"
-                      placeholder="Describe la respuesta del tejido, cambios en medidas, tolerancia y recomendaciones..."
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div class="flex items-center gap-3 pt-2">
-                    <button
-                      type="submit"
-                      class="btn-primary text-xs px-5 py-2.5"
-                      [disabled]="!newEvolutionNotes.trim() || !newEvolutionTreatmentId"
-                    >
-                      Guardar Nota Clínica
-                    </button>
-                    <button
-                      type="button"
-                      (click)="showRegisterEvolution.set(false)"
-                      class="btn-ghost text-xs"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
+            } @else {
+              <div class="p-6 text-center">
+                <p class="text-xs text-zinc-400">Sin historia médica registrada aún.</p>
               </div>
             }
           </section>
-        }
 
-        <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 6 (COLAPSIBLE): Historial de Pagos & Recibos      -->
-        <!-- ═════════════════════════════════════════════════════════ -->
-        @if (permissions.canViewFinancials()) {
+          <!-- 5. HISTORIAL DE PROCEDIMIENTOS (CONSULTA / SOLO LECTURA) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Historial de Procedimientos Realizados</h3>
+                <p class="text-xs text-zinc-400">Registro clínico de sesiones aplicadas</p>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
+                {{ visibleHistory().length }} procedimientos
+              </span>
+            </div>
+
+            <div class="space-y-3">
+              @for (session of visibleHistory(); track session.id) {
+                <div class="p-3.5 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-md bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center">
+                        S{{ session.sessionNumber }}
+                      </span>
+                      <h4 class="text-xs font-bold text-zinc-900">{{ session.treatmentName }}</h4>
+                    </div>
+                    <span class="text-xs text-zinc-400 font-medium">{{ session.date | date:'d MMM yyyy' }}</span>
+                  </div>
+                  <p class="text-xs text-zinc-600 pl-8">"{{ session.notes }}"</p>
+                  <p class="text-[10px] text-zinc-400 pl-8 font-medium">Atendido por: {{ session.specialistName }}</p>
+                </div>
+              }
+
+              @if (visibleHistory().length === 0) {
+                <div class="text-center py-6">
+                  <p class="text-xs text-zinc-400">No hay procedimientos realizados aún.</p>
+                </div>
+              }
+            </div>
+          </section>
+
+        } @else {
+
+          <!-- ═════════════════════════════════════════════════════════ -->
+          <!-- VISTA MÉDICO / COSMETÓLOGA                                -->
+          <!-- 1. Diagrama Clínico de Flujo (Oculto por defecto)         -->
+          <!-- 2. Historia del Paciente                                  -->
+          <!-- 3. Historial de Procedimientos (+ Añadir Debajo)          -->
+          <!-- 4. Historial de Tratamientos (Recetar Tratamiento)        -->
+          <!-- (Estado de Cuenta totalmente Oculto)                      -->
+          <!-- ═════════════════════════════════════════════════════════ -->
+
+          <!-- 1. DIAGRAMA CLÍNICO DE FLUJO (OCULTO POR DEFECTO) -->
           <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
-            <!-- Toggle Button Header -->
             <button
               type="button"
-              (click)="togglePaymentsHistory()"
+              (click)="toggleWorkflowDiagram()"
               class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-zinc-50/60 transition-colors cursor-pointer"
             >
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-700">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-sm sm:text-base font-bold text-zinc-900">Historial de Pagos & Recibos Emitidos</h3>
-                  <p class="text-xs text-zinc-400">Detalle de abonos, fecha y método de pago registrado</p>
+                  <h3 class="text-sm sm:text-base font-bold text-zinc-900">Diagrama Clínico de Flujo</h3>
+                  <p class="text-xs text-zinc-400">Progreso por etapas del paciente</p>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
-                  {{ patientPayments().length }} recibos
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-zinc-500">
+                  {{ showWorkflowDiagram() ? 'Ocultar Diagrama' : 'Ver Diagrama' }}
                 </span>
                 <div
                   class="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 transition-transform duration-300"
-                  [class.rotate-180]="showPaymentsHistory()"
+                  [class.rotate-180]="showWorkflowDiagram()"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -553,45 +354,265 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
               </div>
             </button>
 
-            <!-- Collapsible Table -->
-            @if (showPaymentsHistory()) {
-              <div class="px-6 pb-6 pt-2 border-t border-zinc-100 animate-fade-in">
-                <div class="overflow-x-auto">
-                  <table class="w-full text-xs text-left">
-                    <thead>
-                      <tr class="border-b border-zinc-200/80 text-[10.5px] font-bold uppercase tracking-wider text-zinc-400">
-                        <th class="py-3 pr-4">Recibo ID</th>
-                        <th class="py-3 px-4">Fecha</th>
-                        <th class="py-3 px-4">Método</th>
-                        <th class="py-3 px-4">Registrado por</th>
-                        <th class="py-3 pl-4 text-right">Monto Abonado</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-100">
-                      @for (pay of patientPayments(); track pay.id) {
-                        <tr class="hover:bg-zinc-50/60 transition-colors">
-                          <td class="py-3 pr-4 font-bold text-zinc-900">{{ pay.id }}</td>
-                          <td class="py-3 px-4 text-zinc-600">{{ pay.date | date:'d MMM yyyy' }}</td>
-                          <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-zinc-100 text-zinc-700">
-                              {{ pay.method }}
-                            </span>
-                          </td>
-                          <td class="py-3 px-4 text-zinc-500">{{ pay.registeredBy }}</td>
-                          <td class="py-3 pl-4 text-right font-bold text-emerald-600">{{ pay.amount | currencyCop }}</td>
-                        </tr>
-                      }
-                      @if (patientPayments().length === 0) {
-                        <tr>
-                          <td colspan="5" class="py-6 text-center text-zinc-400">No hay pagos registrados para este paciente</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
+            @if (showWorkflowDiagram()) {
+              <div class="p-6 border-t border-zinc-100 animate-fade-in">
+                <app-workflow-diagram [patient]="p" />
               </div>
             }
           </section>
+
+          <!-- 2. HISTORIA DEL PACIENTE (FICHA MÉDICA & ANAMNESIS) -->
+          <section class="card bg-white border border-zinc-200/90 shadow-sm rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm sm:text-base font-bold text-zinc-900">Historia del Paciente</h3>
+                  <p class="text-xs text-zinc-400">Anamnesis, diagnóstico y antecedentes estéticos</p>
+                </div>
+              </div>
+
+              @if (permissions.canCreateMedicalRecord()) {
+                <button
+                  type="button"
+                  (click)="openMedicalRecordModal()"
+                  class="btn-secondary text-xs px-3.5 py-1.5 cursor-pointer"
+                >
+                  {{ p.medicalRecord ? 'Editar Historia' : 'Crear Historia' }}
+                </button>
+              }
+            </div>
+
+            @if (p.medicalRecord; as rec) {
+              <div class="p-5 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Motivo de Consulta</span>
+                    <p class="text-xs font-semibold text-zinc-900 leading-snug">{{ rec.motivoConsulta }}</p>
+                  </div>
+
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Diagnóstico Dérmico / Estético</span>
+                    <p class="text-xs font-semibold text-zinc-900 leading-snug">{{ rec.diagnosticoEstetico }}</p>
+                  </div>
+
+                  <div class="p-3 border rounded-xl space-y-0.5" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'bg-amber-50/70 border-amber-200' : 'bg-zinc-50 border-zinc-200/70'">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[10px] font-bold uppercase tracking-wider" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-700' : 'text-zinc-400'">Alergias</span>
+                      @if (rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega')) {
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                      }
+                    </div>
+                    <p class="text-xs font-semibold leading-snug" [ngClass]="rec.alergias.toLowerCase().includes('alergia') || !rec.alergias.toLowerCase().includes('niega') ? 'text-amber-900' : 'text-zinc-800'">{{ rec.alergias }}</p>
+                  </div>
+
+                  <div class="p-3 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Antecedentes Clínicos</span>
+                    <p class="text-xs text-zinc-700 leading-snug">{{ rec.antecedentesMedicos }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-zinc-100 text-[11px] text-zinc-400">
+                  <span>Registrado por: <strong class="text-zinc-700">{{ rec.registradoPor }}</strong></span>
+                  <span>{{ rec.fechaRegistro | date:'d MMM yyyy' }}</span>
+                </div>
+              </div>
+            } @else {
+              <div class="p-6 text-center space-y-2">
+                <p class="text-xs text-zinc-500">Sin historia médica registrada para este paciente.</p>
+                @if (permissions.canCreateMedicalRecord()) {
+                  <button
+                    type="button"
+                    (click)="openMedicalRecordModal()"
+                    class="btn-primary text-xs px-3.5 py-1.5 cursor-pointer"
+                  >
+                    Crear Historia Clínica
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- 3. HISTORIAL DE PROCEDIMIENTOS REALIZADOS (+ AÑADIR DEBAJO) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Historial de Procedimientos Realizados</h3>
+                <p class="text-xs text-zinc-400">Notas clínicas de evolución y sesiones efectuadas</p>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
+                {{ visibleHistory().length }} procedimientos
+              </span>
+            </div>
+
+            <!-- Lista de Procedimientos -->
+            <div class="space-y-3">
+              @for (session of visibleHistory(); track session.id) {
+                <div class="p-3.5 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-md bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center">
+                        S{{ session.sessionNumber }}
+                      </span>
+                      <h4 class="text-xs font-bold text-zinc-900">{{ session.treatmentName }}</h4>
+                    </div>
+                    <span class="text-xs text-zinc-400 font-medium">{{ session.date | date:'d MMM yyyy' }}</span>
+                  </div>
+                  <p class="text-xs text-zinc-600 pl-8">"{{ session.notes }}"</p>
+                  <p class="text-[10px] text-zinc-400 pl-8 font-medium">Atendido por: {{ session.specialistName }}</p>
+                </div>
+              }
+
+              @if (visibleHistory().length === 0) {
+                <div class="text-center py-6">
+                  <p class="text-xs text-zinc-400">No hay procedimientos realizados aún.</p>
+                </div>
+              }
+            </div>
+
+            <!-- Añadir Nuevo Procedimiento Debajo -->
+            @if (permissions.canRegisterEvolution()) {
+              <div class="pt-3 border-t border-zinc-100">
+                @if (!showAddProcedure()) {
+                  <button
+                    type="button"
+                    (click)="toggleAddProcedure()"
+                    class="btn-secondary text-xs flex items-center gap-1.5 px-3.5 py-2 cursor-pointer shadow-xs"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    <span>Añadir Nuevo Procedimiento</span>
+                  </button>
+                } @else {
+                  <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-3 animate-fade-in">
+                    <div class="flex items-center justify-between">
+                      <h4 class="text-xs font-bold text-zinc-900">Registrar Procedimiento Realizado</h4>
+                      <button type="button" (click)="toggleAddProcedure()" class="text-xs text-zinc-400 hover:text-zinc-700 cursor-pointer">✕ Cancelar</button>
+                    </div>
+
+                    <form (ngSubmit)="submitProcedure()" class="space-y-3">
+                      <div>
+                        <label class="label text-xs">Tratamiento o Protocolo Correspondiente</label>
+                        <select [(ngModel)]="newEvolutionTreatmentId" name="treatmentId" class="input-premium text-xs" required>
+                          @for (t of visibleTreatments(); track t.id) {
+                            <option [value]="t.id">{{ t.name }} (Sesión {{ t.completedSessions + 1 }}/{{ t.totalSessions }})</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div>
+                        <label class="label text-xs">Observaciones & Nota del Procedimiento</label>
+                        <textarea
+                          [(ngModel)]="newEvolutionNotes"
+                          name="notes"
+                          rows="2"
+                          class="input-premium text-xs"
+                          placeholder="Describe la respuesta dérmica, técnica aplicada y evolución..."
+                          required
+                        ></textarea>
+                      </div>
+
+                      <div class="flex items-center gap-2 pt-1">
+                        <button
+                          type="submit"
+                          class="btn-primary text-xs px-4 py-2 cursor-pointer"
+                          [disabled]="!newEvolutionNotes.trim() || !newEvolutionTreatmentId"
+                        >
+                          Guardar Procedimiento
+                        </button>
+                        <button type="button" (click)="toggleAddProcedure()" class="btn-ghost text-xs">
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- 4. HISTORIAL DE TRATAMIENTOS FORMULADOS (RECETAR) -->
+          <section class="card p-6 bg-white border border-zinc-200/90 shadow-sm rounded-2xl space-y-4">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-base font-bold text-zinc-900">Historial de Tratamientos Formulados</h3>
+                <p class="text-xs text-zinc-400">Planes activos, dosis e indicaciones médicas</p>
+              </div>
+
+              @if (permissions.canPrescribeTreatments()) {
+                <button
+                  type="button"
+                  (click)="openPrescribeModal()"
+                  class="btn-primary text-xs flex items-center gap-1.5 px-3.5 py-2 cursor-pointer shadow-xs"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  <span>Recetar Tratamiento</span>
+                </button>
+              }
+            </div>
+
+            @if (availableTabs().length > 1) {
+              <div>
+                <app-pill-tabs
+                  [tabs]="availableTabs()"
+                  [activeTab]="activeCategory()"
+                  (tabChange)="activeCategory.set($event)"
+                />
+              </div>
+            }
+
+            <div class="space-y-3 pt-1">
+              @for (treatment of filteredTreatments(); track treatment.id) {
+                <div class="p-3.5 bg-zinc-50 border border-zinc-200/70 rounded-xl space-y-2.5">
+                  <div class="flex items-start justify-between">
+                    <div class="min-w-0 flex-1 mr-3">
+                      <h4 class="text-xs sm:text-sm font-bold text-zinc-900">{{ treatment.name }}</h4>
+                      <p class="text-[11px] text-zinc-400 mt-0.5">
+                        {{ treatment.category === 'corporal-cosmetologia' ? 'Corporal / Cosmetología' : 'Procedimiento Médico Especializado' }}
+                      </p>
+                    </div>
+                    <span
+                      [ngClass]="treatment.status === 'active' ? 'badge-active' :
+                                 treatment.status === 'completed' ? 'badge-completed' : 'badge-paused'"
+                    >
+                      {{ treatment.status === 'active' ? 'En Curso' :
+                         treatment.status === 'completed' ? 'Completado' : 'Pausado' }}
+                    </span>
+                  </div>
+
+                  <app-progress-bar
+                    [current]="treatment.completedSessions"
+                    [total]="treatment.totalSessions"
+                  />
+
+                  @if (treatment.dosage || treatment.prescriptionNotes) {
+                    <div class="p-2.5 rounded-lg bg-white border border-zinc-200/60 text-xs text-zinc-600 space-y-0.5">
+                      @if (treatment.dosage) {
+                        <p><strong class="text-zinc-800 font-semibold">Cantidad / Dosis:</strong> {{ treatment.dosage }}</p>
+                      }
+                      @if (treatment.prescriptionNotes) {
+                        <p><strong class="text-zinc-800 font-semibold">Indicaciones:</strong> {{ treatment.prescriptionNotes }}</p>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (filteredTreatments().length === 0) {
+                <div class="text-center py-6">
+                  <p class="text-xs text-zinc-400">No hay tratamientos formulados en esta categoría</p>
+                </div>
+              }
+            </div>
+          </section>
+
         }
 
       </div>
@@ -611,117 +632,74 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
       <!-- ═════════════════════════════════════════════════════════ -->
       @if (showMedicalRecordModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div class="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-3xl shadow-2xl space-y-5 animate-slide-up">
+          <div class="card w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-3xl shadow-2xl space-y-4 animate-slide-up">
             
-            <div class="flex items-center justify-between border-b border-zinc-100 pb-4">
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
-                <h3 class="text-lg font-bold text-zinc-900">
-                  {{ p.medicalRecord ? 'Editar Historia Clínica Médica' : 'Crear Historia Clínica Médica' }}
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900">
+                  {{ p.medicalRecord ? 'Editar Historia Clínica' : 'Crear Historia Clínica' }}
                 </h3>
-                <p class="text-xs text-zinc-400">Paciente: {{ p.firstName }} {{ p.lastName }} · Doc: {{ p.documentId }}</p>
+                <p class="text-xs text-zinc-400">{{ p.firstName }} {{ p.lastName }}</p>
               </div>
               <button
                 type="button"
                 (click)="closeMedicalRecordModal()"
-                class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer"
+                class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer text-xs"
               >
                 ✕
               </button>
             </div>
 
-            <form (ngSubmit)="saveMedicalRecord()" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Motivo de Consulta -->
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Motivo de Consulta Médico-Estética *</label>
-                  <textarea
-                    [(ngModel)]="medicalRecordForm.motivoConsulta"
-                    name="motivoConsulta"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Desea atenuar arrugas de expresión en frente y entrecejo..."
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Diagnóstico Estético -->
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Diagnóstico Dérmico / Facial / Corporal *</label>
-                  <textarea
-                    [(ngModel)]="medicalRecordForm.diagnosticoEstetico"
-                    name="diagnosticoEstetico"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Fotoenvejecimiento Glogau II, líneas dinámicas frontales..."
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Antecedentes Médicos -->
-                <div>
-                  <label class="label text-xs">Antecedentes Médicos / Quirúrgicos *</label>
-                  <textarea
-                    [(ngModel)]="medicalRecordForm.antecedentesMedicos"
-                    name="antecedentesMedicos"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Enfermedades crónicas, cirugías previas, medicamentos..."
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Alergias -->
-                <div>
-                  <label class="label text-xs">Alergias Identificadas *</label>
-                  <textarea
-                    [(ngModel)]="medicalRecordForm.alergias"
-                    name="alergias"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Alergias a fármacos, anestésicos locales, látex o niega..."
-                    required
-                  ></textarea>
-                </div>
-
-                <!-- Zonas Anatómicas a Tratar -->
-                <div>
-                  <label class="label text-xs">Zonas Anatómicas de Intervención *</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="medicalRecordForm.zonasTratamiento"
-                    name="zonasTratamiento"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Tercio superior facial (frente, entrecejo, periocular)"
-                    required
-                  />
-                </div>
-
-                <!-- Contraindicaciones -->
-                <div>
-                  <label class="label text-xs">Contraindicaciones / Advertencias</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="medicalRecordForm.contraindicaciones"
-                    name="contraindicaciones"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Ninguna detectada / Embarazo o lactancia descartados"
-                  />
-                </div>
-
-                <!-- Cuidados Post-Procedimiento -->
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Recomendaciones & Cuidados Post-Procedimiento</label>
-                  <textarea
-                    [(ngModel)]="medicalRecordForm.cuidadosPost"
-                    name="cuidadosPost"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Evitar masajes en la zona tratada por 4h, usar protector solar FPS 50+..."
-                  ></textarea>
-                </div>
+            <form (ngSubmit)="saveMedicalRecord()" class="space-y-3">
+              <div>
+                <label class="label text-xs">Motivo de Consulta *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="medicalRecordForm.motivoConsulta"
+                  name="motivoConsulta"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Desea atenuar arrugas en tercio superior..."
+                  required
+                />
               </div>
 
-              <div class="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+              <div>
+                <label class="label text-xs">Diagnóstico Dérmico / Estético *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="medicalRecordForm.diagnosticoEstetico"
+                  name="diagnosticoEstetico"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Fotoenvejecimiento Glogau II, líneas dinámicas frontales..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="label text-xs">Alergias Identificadas *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="medicalRecordForm.alergias"
+                  name="alergias"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Alergia al polen / Niega alergias medicamentosas"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="label text-xs">Antecedentes Médicos & Quirúrgicos *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="medicalRecordForm.antecedentesMedicos"
+                  name="antecedentesMedicos"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Sin antecedentes patológicos / Niega cirugías previas"
+                  required
+                />
+              </div>
+
+              <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-100">
                 <button
                   type="button"
                   (click)="closeMedicalRecordModal()"
@@ -731,10 +709,10 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
                 </button>
                 <button
                   type="submit"
-                  class="btn-primary text-xs px-5 py-2.5 cursor-pointer"
+                  class="btn-primary text-xs px-4 py-2 cursor-pointer"
                   [disabled]="!medicalRecordForm.motivoConsulta.trim() || !medicalRecordForm.diagnosticoEstetico.trim()"
                 >
-                  Guardar Historia Clínica
+                  Guardar Historia
                 </button>
               </div>
             </form>
@@ -744,37 +722,30 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
       }
 
       <!-- ═════════════════════════════════════════════════════════ -->
-      <!-- MODAL: Recetar & Formular Tratamiento                     -->
+      <!-- MODAL: Recetar Tratamiento (Medicamento, Cantidad, Notas)  -->
       <!-- ═════════════════════════════════════════════════════════ -->
       @if (showPrescribeModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div class="card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-3xl shadow-2xl space-y-5 animate-slide-up">
+          <div class="card w-full max-w-lg p-6 bg-white rounded-3xl shadow-2xl space-y-4 animate-slide-up">
             
-            <div class="flex items-center justify-between border-b border-zinc-100 pb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white flex items-center justify-center">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-bold text-zinc-900">Formular & Recetar Tratamiento</h3>
-                  <p class="text-xs text-zinc-400">Prescripción clínica para {{ p.firstName }} {{ p.lastName }}</p>
-                </div>
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-zinc-900">Recetar Tratamiento</h3>
+                <p class="text-xs text-zinc-400">{{ p.firstName }} {{ p.lastName }}</p>
               </div>
               <button
                 type="button"
                 (click)="closePrescribeModal()"
-                class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer"
+                class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-800 flex items-center justify-center cursor-pointer text-xs"
               >
                 ✕
               </button>
             </div>
 
-            <!-- Presets Rápidos de Procedimientos Médicos -->
+            <!-- Accesos Rápidos de Medicamento -->
             <div>
-              <label class="label text-[11px] uppercase tracking-wider text-zinc-400 font-bold mb-2">
-                Procedimientos Médicos Sugeridos (Clic para autocompletar):
+              <label class="label text-[10.5px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">
+                Medicamentos & Procedimientos Frecuentes:
               </label>
               <div class="flex flex-wrap gap-1.5">
                 @for (preset of prescriptionPresets; track preset.name) {
@@ -790,86 +761,45 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
               </div>
             </div>
 
-            <!-- Formulario de Prescripción -->
-            <form (ngSubmit)="submitPrescription()" class="space-y-4 pt-2">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Nombre del Tratamiento *</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="prescribeForm.name"
-                    name="name"
-                    class="input-premium text-xs"
-                    placeholder="Ej: Toxina Botulínica – Tercio Superior"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label class="label text-xs">Categoría Clínica *</label>
-                  <select
-                    [(ngModel)]="prescribeForm.category"
-                    name="category"
-                    class="input-premium text-xs"
-                    required
-                  >
-                    <option value="medico-no-invasivo">Procedimiento Médico No Invasivo</option>
-                    <option value="corporal-cosmetologia">Corporal / Cosmetología Complementaria</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="label text-xs">Sesiones Programadas *</label>
-                  <input
-                    type="number"
-                    [(ngModel)]="prescribeForm.totalSessions"
-                    name="totalSessions"
-                    min="1"
-                    max="30"
-                    class="input-premium text-xs"
-                    required
-                  />
-                </div>
-
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Dosis, Unidades & Zonas Anatómicas *</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="prescribeForm.dosage"
-                    name="dosage"
-                    class="input-premium text-xs"
-                    placeholder="Ej: 50 unidades Dysport en frente, entrecejo y periocular"
-                    required
-                  />
-                </div>
-
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Receta de Cuidados & Advertencias Post-Tratamiento *</label>
-                  <textarea
-                    [(ngModel)]="prescribeForm.prescriptionNotes"
-                    name="prescriptionNotes"
-                    rows="2"
-                    class="input-premium text-xs"
-                    placeholder="Ej: No acostarse en 4 horas. Aplicar protector solar cada 3h. Cita de control en 15 días."
-                    required
-                  ></textarea>
-                </div>
-
-                <div class="md:col-span-2">
-                  <label class="label text-xs">Honorarios / Costo Total del Tratamiento ($ COP) *</label>
-                  <input
-                    type="number"
-                    [(ngModel)]="prescribeForm.totalCost"
-                    name="totalCost"
-                    step="50000"
-                    min="0"
-                    class="input-premium text-xs"
-                    required
-                  />
-                </div>
+            <!-- Formulario Simplificado -->
+            <form (ngSubmit)="submitPrescription()" class="space-y-3.5 pt-1">
+              <div>
+                <label class="label text-xs">Medicamento o Tratamiento *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="prescribeForm.name"
+                  name="name"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Toxina Botulínica (Botox/Dysport)"
+                  required
+                />
               </div>
 
-              <div class="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+              <div>
+                <label class="label text-xs">Cantidad / Dosis *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="prescribeForm.quantity"
+                  name="quantity"
+                  class="input-premium text-xs"
+                  placeholder="Ej: 50 Unidades / 1 Jeringa (1ml) / 3 Sesiones"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="label text-xs">Indicaciones del Médico / Receta *</label>
+                <textarea
+                  [(ngModel)]="prescribeForm.notes"
+                  name="notes"
+                  rows="2"
+                  class="input-premium text-xs"
+                  placeholder="Ej: Aplicar frío local las primeras 6h. No masajear la zona tratada..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-100">
                 <button
                   type="button"
                   (click)="closePrescribeModal()"
@@ -879,10 +809,10 @@ import { Patient, TreatmentCategory, ClinicalSession, MedicalRecord } from '../.
                 </button>
                 <button
                   type="submit"
-                  class="btn-primary text-xs px-5 py-2.5 cursor-pointer shadow-xs"
-                  [disabled]="!prescribeForm.name.trim() || prescribeForm.totalSessions < 1"
+                  class="btn-primary text-xs px-4 py-2 cursor-pointer shadow-xs"
+                  [disabled]="!prescribeForm.name.trim() || !prescribeForm.quantity.trim()"
                 >
-                  Emitir Receta & Formular
+                  Recetar Tratamiento
                 </button>
               </div>
             </form>
@@ -916,10 +846,94 @@ export class PatientDetailComponent implements OnInit {
   readonly showPaymentModal = signal(false);
   readonly activeCategory = signal<string>('');
 
-  // Collapsible Accordion States (hidden by default, revealed on click)
+  // Collapsible States
+  readonly showWorkflowDiagram = signal(false);
+  readonly showAddProcedure = signal(false);
   readonly showEvolutionHistory = signal(false);
   readonly showRegisterEvolution = signal(false);
   readonly showPaymentsHistory = signal(false);
+
+  // Modal States
+  readonly showMedicalRecordModal = signal(false);
+  readonly showPrescribeModal = signal(false);
+
+  // Medical Record Form
+  medicalRecordForm = {
+    antecedentesMedicos: '',
+    alergias: '',
+    motivoConsulta: '',
+    diagnosticoEstetico: '',
+    zonasTratamiento: '',
+    contraindicaciones: '',
+    cuidadosPost: '',
+  };
+
+  // Simplified Prescription Form: Medicamento, Cantidad, Indicaciones
+  prescribeForm = {
+    name: '',
+    quantity: '',
+    notes: '',
+  };
+
+  get prescriptionPresets() {
+    const role = this.authService.currentRole();
+    if (role === 'cosmetologa') {
+      return [
+        {
+          name: 'Drenaje Linfático Post-Quirúrgico',
+          quantity: '5 Sesiones (45 min)',
+          notes: 'Drenaje manual distal a proximal. Usar faja compresiva después.',
+        },
+        {
+          name: 'Limpieza Facial Profunda + Punta Diamante',
+          quantity: '1 Sesión (60 min)',
+          notes: 'No aplicar maquillaje 24h. Usar protector solar FPS 50+ cada 3h.',
+        },
+        {
+          name: 'Radiofrecuencia Facial y Cuello',
+          quantity: '4 Sesiones (quincenal)',
+          notes: 'Hidratación con ácido hialurónico tópico. Evitar calor directo o sauna 48h.',
+        },
+        {
+          name: 'Masaje Reductor y Moldeador',
+          quantity: '8 Sesiones (2x semana)',
+          notes: 'Tomar al menos 2 litros de agua diarios para drenaje metabólico.',
+        },
+      ];
+    }
+    return [
+      {
+        name: 'Toxina Botulínica (Botox)',
+        quantity: '50 Unidades',
+        notes: 'No frotar la zona 4h. Evitar acostarse o ejercicio físico vigoroso por 24h.',
+      },
+      {
+        name: 'Ácido Hialurónico Labios',
+        quantity: '1 Jeringa (1ml)',
+        notes: 'Aplicar frío local primeras 6 horas. Hidratación constante con bálsamo.',
+      },
+      {
+        name: 'Bioestimulador Radiesse',
+        quantity: '1 Vial (1.5ml)',
+        notes: 'Regla del 5-5-5: masaje 5 minutos, 5 veces al día por 5 días.',
+      },
+      {
+        name: 'Bioestimulador Sculptra',
+        quantity: '1 Vial',
+        notes: 'Masaje post-tratamiento 5 min al día por 5 días. Control en 4 semanas.',
+      },
+      {
+        name: 'Peeling Químico Médico',
+        quantity: '2 Capas',
+        notes: 'Uso estricto de protector solar FPS 50+ cada 3 horas. No retirar descamación.',
+      },
+      {
+        name: 'Plasma Rico en Plaquetas (PRP)',
+        quantity: '1 Sesión (Tubo)',
+        notes: 'Lavar con agua tibia sin jabón por 12 horas. Evitar maquillaje 24h.',
+      },
+    ];
+  }
 
   // New evolution form fields
   newEvolutionTreatmentId = '';
@@ -1045,6 +1059,44 @@ export class PatientDetailComponent implements OnInit {
     this.router.navigate(['/pacientes']);
   }
 
+  toggleWorkflowDiagram(): void {
+    this.showWorkflowDiagram.update(v => !v);
+  }
+
+  toggleAddProcedure(): void {
+    this.showAddProcedure.update(v => !v);
+  }
+
+  submitProcedure(): void {
+    const p = this.patient();
+    if (!p || !this.newEvolutionNotes.trim()) return;
+
+    let treatmentName = 'Procedimiento Clínico';
+    let sessionNumber = 1;
+
+    if (this.newEvolutionTreatmentId) {
+      const treatment = p.treatments.find(t => t.id === this.newEvolutionTreatmentId);
+      if (treatment) {
+        treatmentName = treatment.name;
+        sessionNumber = (treatment.completedSessions || 0) + 1;
+      }
+    }
+
+    this.dataService.addClinicalEvolution(p.id, {
+      treatmentId: this.newEvolutionTreatmentId || 'proc-directo',
+      treatmentName,
+      sessionNumber,
+      date: new Date().toISOString().split('T')[0],
+      notes: this.newEvolutionNotes.trim(),
+      specialistName: this.authService.currentUser()?.name || 'Especialista',
+      specialistId: this.authService.currentUser()?.id || '',
+    });
+
+    this.patient.set(this.dataService.getPatientById(p.id));
+    this.newEvolutionNotes = '';
+    this.showAddProcedure.set(false);
+  }
+
   toggleEvolutionHistory(): void {
     this.showEvolutionHistory.update(v => !v);
   }
@@ -1055,5 +1107,98 @@ export class PatientDetailComponent implements OnInit {
 
   togglePaymentsHistory(): void {
     this.showPaymentsHistory.update(v => !v);
+  }
+
+  // ─── Medical Record Actions ─────────────────────────────
+  openMedicalRecordModal(): void {
+    const p = this.patient();
+    const rec = p?.medicalRecord;
+    this.medicalRecordForm = {
+      antecedentesMedicos: rec?.antecedentesMedicos || '',
+      alergias: rec?.alergias || '',
+      motivoConsulta: rec?.motivoConsulta || '',
+      diagnosticoEstetico: rec?.diagnosticoEstetico || '',
+      zonasTratamiento: rec?.zonasTratamiento || '',
+      contraindicaciones: rec?.contraindicaciones || '',
+      cuidadosPost: rec?.cuidadosPost || '',
+    };
+    this.showMedicalRecordModal.set(true);
+  }
+
+  closeMedicalRecordModal(): void {
+    this.showMedicalRecordModal.set(false);
+  }
+
+  saveMedicalRecord(): void {
+    const p = this.patient();
+    if (!p) return;
+
+    const doctorName = this.authService.currentUser()?.name || 'Dr. Andrés Castaño';
+    const record: MedicalRecord = {
+      antecedentesMedicos: this.medicalRecordForm.antecedentesMedicos.trim() || 'Sin antecedentes patológicos relevantes',
+      alergias: this.medicalRecordForm.alergias.trim() || 'Niega alergias medicamentosas',
+      motivoConsulta: this.medicalRecordForm.motivoConsulta.trim(),
+      diagnosticoEstetico: this.medicalRecordForm.diagnosticoEstetico.trim(),
+      zonasTratamiento: this.medicalRecordForm.zonasTratamiento.trim() || 'Rostro / Facial',
+      contraindicaciones: this.medicalRecordForm.contraindicaciones.trim() || 'Ninguna contraindicación activa',
+      cuidadosPost: this.medicalRecordForm.cuidadosPost.trim() || 'Cuidados estándar post-procedimiento',
+      registradoPor: p.medicalRecord?.registradoPor || doctorName,
+      fechaRegistro: p.medicalRecord?.fechaRegistro || new Date().toISOString().split('T')[0],
+      ultimaActualizacion: new Date().toISOString().split('T')[0],
+    };
+
+    this.dataService.saveMedicalRecord(p.id, record);
+    this.patient.set(this.dataService.getPatientById(p.id));
+    this.showMedicalRecordModal.set(false);
+  }
+
+  // ─── Prescription Actions ───────────────────────────────
+  openPrescribeModal(): void {
+    const defaultPreset = this.prescriptionPresets[0];
+    this.prescribeForm = {
+      name: defaultPreset?.name || '',
+      quantity: defaultPreset?.quantity || '',
+      notes: defaultPreset?.notes || '',
+    };
+    this.showPrescribeModal.set(true);
+  }
+
+  closePrescribeModal(): void {
+    this.showPrescribeModal.set(false);
+  }
+
+  selectPrescriptionPreset(preset: { name: string; quantity: string; notes: string }): void {
+    this.prescribeForm = {
+      name: preset.name,
+      quantity: preset.quantity,
+      notes: preset.notes,
+    };
+  }
+
+  submitPrescription(): void {
+    const p = this.patient();
+    if (!p || !this.prescribeForm.name.trim() || !this.prescribeForm.quantity.trim()) return;
+
+    const user = this.authService.currentUser();
+    const doctorName = user?.name || 'Dr. Andrés Castaño';
+    const doctorId = user?.id || 'usr-003';
+    const isCosmetologa = this.authService.currentRole() === 'cosmetologa';
+
+    this.dataService.prescribeTreatment(
+      p.id,
+      {
+        name: this.prescribeForm.name.trim(),
+        dosage: this.prescribeForm.quantity.trim(),
+        prescriptionNotes: this.prescribeForm.notes.trim(),
+        category: isCosmetologa ? 'corporal-cosmetologia' : 'medico-no-invasivo',
+        totalSessions: 1,
+        totalCost: 0,
+      },
+      doctorName,
+      doctorId
+    );
+
+    this.patient.set(this.dataService.getPatientById(p.id));
+    this.showPrescribeModal.set(false);
   }
 }

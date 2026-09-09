@@ -447,9 +447,9 @@ export class MockDataService {
     patientId: string,
     treatmentData: {
       name: string;
-      category: TreatmentCategory;
-      totalSessions: number;
-      totalCost: number;
+      category?: TreatmentCategory;
+      totalSessions?: number;
+      totalCost?: number;
       dosage?: string;
       prescriptionNotes?: string;
     },
@@ -460,10 +460,10 @@ export class MockDataService {
     const newTreatment: Treatment = {
       id: newTreatmentId,
       name: treatmentData.name,
-      category: treatmentData.category,
-      totalSessions: treatmentData.totalSessions,
+      category: treatmentData.category || 'medico-no-invasivo',
+      totalSessions: treatmentData.totalSessions || 1,
       completedSessions: 0,
-      totalCost: treatmentData.totalCost,
+      totalCost: treatmentData.totalCost || 0,
       totalPaid: 0,
       status: 'active',
       dosage: treatmentData.dosage,

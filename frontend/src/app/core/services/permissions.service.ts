@@ -71,19 +71,19 @@ export class PermissionsService {
 
   // ─── Clinical History & Prescriptions ─────────────────
 
-  /** Can register clinical evolution notes */
+  /** Can register clinical evolution notes (Specialists ONLY) */
   readonly canRegisterEvolution = computed(() =>
-    this.is('gerente', 'medico', 'cosmetologa')
+    this.is('medico', 'cosmetologa')
   );
 
-  /** Can create or update patient's medical history (Doctor & Gerente) */
+  /** Can create or update patient's medical history (Doctor ONLY) */
   readonly canCreateMedicalRecord = computed(() =>
-    this.is('gerente', 'medico')
+    this.is('medico')
   );
 
-  /** Can prescribe / formulate treatments (Doctor & Gerente) */
+  /** Can prescribe / formulate treatments (Specialists ONLY) */
   readonly canPrescribeTreatments = computed(() =>
-    this.is('gerente', 'medico')
+    this.is('medico', 'cosmetologa')
   );
 
   // ─── Financial Permissions ──────────────────────────────

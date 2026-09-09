@@ -318,16 +318,34 @@ import { ROLE_LABELS } from '../../core/models/user.model';
                     <div>
                       <h4 class="text-sm font-bold text-zinc-900">{{ p.firstName }} {{ p.lastName }}</h4>
                       <p class="text-xs text-zinc-500">CC {{ p.documentId }} · Desde: {{ p.createdAt }}</p>
+                      <div class="mt-1">
+                        @if (p.medicalRecord) {
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Historia Médica al día
+                          </span>
+                        } @else {
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Pendiente Historia Clínica
+                          </span>
+                        }
+                      </div>
                     </div>
                   </div>
                   <button (click)="openPatient(p.id)" class="btn-secondary text-xs px-3 py-1.5">
-                    Ficha Clínica
+                    Expediente & Receta →
                   </button>
                 </div>
 
-                <div class="pt-2 border-t border-zinc-200/60">
-                  <p class="text-[10px] uppercase font-semibold text-zinc-400">Procedimiento Activo</p>
-                  <p class="text-xs font-semibold text-zinc-800 mt-0.5">{{ getPatientActiveMedicalTreatment(p) }}</p>
+                <div class="pt-2 border-t border-zinc-200/60 flex items-center justify-between text-xs">
+                  <div>
+                    <p class="text-[10px] uppercase font-semibold text-zinc-400">Procedimiento Activo</p>
+                    <p class="text-xs font-semibold text-zinc-800 mt-0.5">{{ getPatientActiveMedicalTreatment(p) }}</p>
+                  </div>
+                  <button (click)="openPatient(p.id)" class="text-xs font-semibold text-zinc-900 hover:text-black cursor-pointer">
+                    Recetar →
+                  </button>
                 </div>
               </div>
             }
