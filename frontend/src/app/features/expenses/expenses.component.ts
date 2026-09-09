@@ -47,54 +47,44 @@ import { ExpenseCategory, ExpenseItem } from '../../core/models/finance.model';
              [ngClass]="permissions.canViewNetBalance() ? 'sm:grid-cols-3' : 'sm:grid-cols-2'">
           
           <!-- Total Cobrado -->
-          <div class="card p-5 bg-white border border-zinc-200/90">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-                <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                </svg>
-              </div>
-              <p class="micro-label">Total Cobrado</p>
+          <div class="card p-5 bg-white border border-zinc-200/90 hover:border-zinc-300 transition-colors">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Cobrado</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-zinc-900">
+            <p class="text-xl font-bold text-zinc-900 tracking-tight my-1">
               {{ dataService.financialSummary().totalCollected | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Ingresos por tratamientos</p>
+            <p class="text-xs text-zinc-400">Ingresos por tratamientos</p>
           </div>
 
           <!-- Total Gastos -->
-          <div class="card p-5 bg-white border border-zinc-200/90">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center">
-                <svg class="w-4.5 h-4.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p class="micro-label">Total Gastos</p>
+          <div class="card p-5 bg-white border border-zinc-200/90 hover:border-zinc-300 transition-colors">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Gastos</span>
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-rose-600">
+            <p class="text-xl font-bold text-rose-600 tracking-tight my-1">
               {{ dataService.financialSummary().totalExpenses | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Egresos acumulados</p>
+            <p class="text-xs text-zinc-400">Egresos acumulados</p>
           </div>
 
           <!-- Balance Neto — SOLO GERENTE -->
           @if (permissions.canViewNetBalance()) {
-            <div class="card p-5 bg-zinc-900 text-white border border-zinc-800">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center">
-                  <svg class="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                  </svg>
-                </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Balance Neto</p>
+            <div class="card p-5 bg-zinc-900 text-white border border-zinc-800 hover:border-zinc-700 transition-colors">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Balance Neto</span>
+                <span class="w-2 h-2 rounded-full"
+                      [class.bg-emerald-400]="dataService.financialSummary().netBalance >= 0"
+                      [class.bg-rose-400]="dataService.financialSummary().netBalance < 0"></span>
               </div>
-              <p class="text-2xl font-bold tracking-tight"
+              <p class="text-xl font-bold tracking-tight my-1"
                  [class.text-emerald-400]="dataService.financialSummary().netBalance >= 0"
                  [class.text-rose-400]="dataService.financialSummary().netBalance < 0">
                 {{ dataService.financialSummary().netBalance | currencyCop }}
               </p>
-              <p class="text-xs text-zinc-400 mt-1">Utilidad neta del centro</p>
+              <p class="text-xs text-zinc-400">Utilidad neta del centro</p>
             </div>
           }
         </div>
@@ -173,7 +163,7 @@ import { ExpenseCategory, ExpenseItem } from '../../core/models/finance.model';
                   {{ getCategoryLabel(expense.category) }}
                 </span>
               </span>
-              <span class="col-span-2 text-sm font-bold text-zinc-900 text-right font-mono">{{ expense.amount | currencyCop }}</span>
+              <span class="col-span-2 text-sm font-semibold text-zinc-900 text-right">{{ expense.amount | currencyCop }}</span>
               <span class="col-span-2 text-xs text-zinc-500 text-right truncate font-medium">{{ expense.registeredBy }}</span>
             </div>
           }

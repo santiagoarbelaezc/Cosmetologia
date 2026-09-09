@@ -14,6 +14,8 @@ interface NavItem {
   iconSvg: string;
 }
 
+import { SidebarService } from '../../../core/services/sidebar.service';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -21,8 +23,8 @@ interface NavItem {
   template: `
     <aside
       class="fixed left-0 top-0 h-screen flex flex-col bg-white border-r border-zinc-200/90 transition-all duration-300 ease-out z-40 select-none shadow-[1px_0_10px_rgba(0,0,0,0.02)]"
-      [class.w-72]="!isCollapsed()"
-      [class.w-20]="isCollapsed()"
+      [class.w-72]="!sidebarService.isCollapsed()"
+      [class.w-20]="sidebarService.isCollapsed()"
     >
       <!-- ═════════════════════════════════════════════════════════ -->
       <!-- BRAND & CLINIC IDENTITY                                   -->
@@ -210,9 +212,10 @@ interface NavItem {
 export class SidebarComponent {
   readonly authService = inject(AuthService);
   readonly permissions = inject(PermissionsService);
+  readonly sidebarService = inject(SidebarService);
   private readonly router = inject(Router);
 
-  readonly isCollapsed = signal(false);
+  readonly isCollapsed = this.sidebarService.isCollapsed;
 
   private readonly allNavItems: NavItem[] = [
     {
@@ -250,7 +253,7 @@ export class SidebarComponent {
   );
 
   toggleCollapse(): void {
-    this.isCollapsed.update(v => !v);
+    this.sidebarService.toggle();
   }
 
   logout(): void {

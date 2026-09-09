@@ -78,10 +78,10 @@ import { ROLE_LABELS } from '../../core/models/user.model';
               <span class="micro-label">Facturación Bruta</span>
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-zinc-900">
+            <p class="text-xl font-bold tracking-tight text-zinc-900 my-0.5">
               {{ dataService.financialSummary().totalCollected | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Ingresos recaudados del periodo</p>
+            <p class="text-xs text-zinc-400">Ingresos recaudados del periodo</p>
           </div>
 
           <div class="card p-5 bg-white border border-zinc-200/90">
@@ -89,10 +89,10 @@ import { ROLE_LABELS } from '../../core/models/user.model';
               <span class="micro-label">Egresos Operativos</span>
               <span class="w-2 h-2 rounded-full bg-rose-500"></span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-rose-600">
+            <p class="text-xl font-bold tracking-tight text-rose-600 my-0.5">
               {{ dataService.financialSummary().totalExpenses | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Insumos, nómina y servicios</p>
+            <p class="text-xs text-zinc-400">Insumos, nómina y servicios</p>
           </div>
 
           <div class="card p-5 bg-zinc-900 text-white border border-zinc-800">
@@ -103,10 +103,10 @@ import { ROLE_LABELS } from '../../core/models/user.model';
                 {{ profitMarginPercentage() }}% margen
               </span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-white">
+            <p class="text-xl font-bold tracking-tight text-white my-0.5">
               {{ dataService.financialSummary().netBalance | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Beneficio operativo neto</p>
+            <p class="text-xs text-zinc-400">Beneficio operativo neto</p>
           </div>
 
           <div class="card p-5 bg-white border border-zinc-200/90">
@@ -114,10 +114,10 @@ import { ROLE_LABELS } from '../../core/models/user.model';
               <span class="micro-label">Cuentas por Cobrar</span>
               <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             </div>
-            <p class="text-2xl font-bold tracking-tight text-zinc-900">
+            <p class="text-xl font-bold tracking-tight text-zinc-900 my-0.5">
               {{ totalPendingReceivables() | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Saldos pendientes en cartera</p>
+            <p class="text-xs text-zinc-400">Saldos pendientes en cartera</p>
           </div>
         </section>
 
@@ -191,18 +191,18 @@ import { ROLE_LABELS } from '../../core/models/user.model';
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="card p-5 bg-white border border-zinc-200/90">
             <span class="micro-label">Total Recaudado</span>
-            <p class="text-2xl font-bold tracking-tight text-emerald-600 mt-1">
+            <p class="text-xl font-bold tracking-tight text-emerald-600 my-1">
               {{ dataService.financialSummary().totalCollected | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Ingresos registrados en caja</p>
+            <p class="text-xs text-zinc-400">Ingresos registrados en caja</p>
           </div>
 
           <div class="card p-5 bg-white border border-zinc-200/90">
             <span class="micro-label">Cartera por Cobrar</span>
-            <p class="text-2xl font-bold tracking-tight text-rose-600 mt-1">
+            <p class="text-xl font-bold tracking-tight text-rose-600 my-1">
               {{ totalPendingReceivables() | currencyCop }}
             </p>
-            <p class="text-xs text-zinc-400 mt-1">Saldos pendientes de cobro</p>
+            <p class="text-xs text-zinc-400">Saldos pendientes de cobro</p>
           </div>
 
           <div class="card p-5 bg-white border border-zinc-200/90">
