@@ -15,7 +15,7 @@ import { AuthService } from './core/services/auth.service';
         <app-sidebar />
         <main
           class="flex-1 transition-all duration-300 ease-out"
-          [class.ml-64]="true"
+          [class.ml-72]="true"
         >
           <div class="max-w-[1700px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-7">
             <router-outlet />

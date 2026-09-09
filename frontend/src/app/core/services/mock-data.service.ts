@@ -303,6 +303,12 @@ export class MockDataService {
     { id: 'exp-008', concept: 'Kits de peeling químico (6 unidades)', category: 'insumo-medico', amount: 480000, date: '2026-08-20', registeredBy: 'Valentina Ríos' },
     { id: 'exp-009', concept: 'Mantenimiento equipo radiofrecuencia', category: 'operativo', amount: 350000, date: '2026-08-25', registeredBy: 'Carolina Méndez' },
     { id: 'exp-010', concept: 'Papelería y suministros de oficina', category: 'administrativo', amount: 95000, date: '2026-09-01', registeredBy: 'Valentina Ríos' },
+    { id: 'exp-011', concept: 'Agujas 30G y microcánulas para relleno', category: 'insumo-medico', amount: 420000, date: '2026-09-02', registeredBy: 'Dr. Andrés Castaño' },
+    { id: 'exp-012', concept: 'Aceites esenciales y cremas reductoras', category: 'insumo-medico', amount: 260000, date: '2026-09-03', registeredBy: 'Camila Herrera' },
+    { id: 'exp-013', concept: 'Publicidad digital en redes sociales', category: 'operativo', amount: 600000, date: '2026-09-04', registeredBy: 'Carolina Méndez' },
+    { id: 'exp-014', concept: 'Servicio de lavandería y toallas clínicas', category: 'operativo', amount: 210000, date: '2026-09-05', registeredBy: 'Valentina Ríos' },
+    { id: 'exp-015', concept: 'Software de historia clínica y facturación DIAN', category: 'administrativo', amount: 280000, date: '2026-09-06', registeredBy: 'Carolina Méndez' },
+    { id: 'exp-016', concept: 'Anestésico tópico en crema (5 tubos)', category: 'insumo-medico', amount: 190000, date: '2026-09-07', registeredBy: 'Dr. Andrés Castaño' },
   ]);
 
   // ─── Public Accessors ──────────────────────────────────────

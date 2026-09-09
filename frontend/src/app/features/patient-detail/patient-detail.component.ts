@@ -8,6 +8,7 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
 import { ProgressBarComponent } from '../../shared/components/progress-bar/progress-bar.component';
 import { PaymentModalComponent, PaymentFormData } from '../../shared/components/payment-modal/payment-modal.component';
 import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
+import { WorkflowDiagramComponent } from '../../shared/components/workflow-diagram/workflow-diagram.component';
 import { Patient, TreatmentCategory } from '../../core/models/patient.model';
 
 @Component({
@@ -19,6 +20,7 @@ import { Patient, TreatmentCategory } from '../../core/models/patient.model';
     ProgressBarComponent,
     PaymentModalComponent,
     CurrencyCopPipe,
+    WorkflowDiagramComponent,
   ],
   template: `
     @if (patient(); as p) {
@@ -72,6 +74,11 @@ import { Patient, TreatmentCategory } from '../../core/models/patient.model';
             </div>
           </div>
         </section>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Workflow Progress Diagram                       -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <app-workflow-diagram [patient]="p" />
 
         <!-- ═══════════════════════════════════════════════ -->
         <!-- Financial Card (Gerente + Administradora ONLY) -->
