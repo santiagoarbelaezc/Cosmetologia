@@ -1,1 +1,120 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global Resets ──────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  @apply bg-white text-zinc-900 font-sans;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Premium Input Styles ───────────────────────────── */
+@layer components {
+  .input-premium {
+    @apply w-full px-4 py-3 bg-zinc-50 border border-zinc-200/90 rounded-2xl text-sm text-zinc-900
+           placeholder:text-zinc-400
+           focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black
+           transition-all duration-200;
+  }
+
+  .input-premium-lg {
+    @apply w-full px-5 py-4 bg-zinc-50 border border-zinc-200/90 rounded-2xl text-2xl font-bold text-zinc-900
+           placeholder:text-zinc-300 text-center
+           focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black
+           transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white text-sm font-semibold
+           rounded-full shadow-sm
+           hover:bg-zinc-800 active:scale-[0.98]
+           transition-all duration-200 ease-out
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-zinc-100 text-zinc-700 text-sm font-semibold
+           rounded-full
+           hover:bg-zinc-200 active:scale-[0.98]
+           transition-all duration-200 ease-out;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-zinc-400 text-sm font-medium
+           rounded-full
+           hover:text-zinc-600 hover:bg-zinc-50
+           transition-all duration-200 ease-out;
+  }
+
+  .card {
+    @apply bg-white border border-zinc-200/80 rounded-2xl;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-lg hover:shadow-zinc-200/50 hover:border-zinc-300/80 transition-all duration-300 ease-out;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full;
+  }
+
+  .badge-active {
+    @apply badge bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-completed {
+    @apply badge bg-zinc-100 text-zinc-600;
+  }
+
+  .badge-paused {
+    @apply badge bg-amber-50 text-amber-700;
+  }
+
+  .badge-pending {
+    @apply badge bg-rose-50 text-rose-600;
+  }
+
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-1.5;
+  }
+
+  .section-title {
+    @apply text-lg font-bold tracking-tight text-zinc-900;
+  }
+
+  .micro-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-zinc-400;
+  }
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
