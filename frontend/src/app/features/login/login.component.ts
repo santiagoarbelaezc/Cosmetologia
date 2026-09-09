@@ -10,144 +10,123 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-zinc-100 flex items-center justify-center p-3 sm:p-6 lg:p-8">
+    <div class="min-h-screen bg-zinc-100/90 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       
-      <!-- Contenedor Principal Centrado -->
-      <div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl border border-zinc-200/90 overflow-hidden grid grid-cols-1 lg:grid-cols-12 animate-fade-in">
+      <!-- Contenedor Principal Más Ancho y Limpio -->
+      <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl border border-zinc-200/90 overflow-hidden grid grid-cols-1 lg:grid-cols-12 animate-fade-in">
         
         <!-- ═════════════════════════════════════════════════════════ -->
-        <!-- COLUMNA IZQUIERDA: Acceso Rápido por Rol (Prototipo)     -->
+        <!-- COLUMNA IZQUIERDA: Acceso Rápido                          -->
         <!-- ═════════════════════════════════════════════════════════ -->
-        <aside class="lg:col-span-5 bg-zinc-50 border-r border-zinc-200/80 p-5 sm:p-6 flex flex-col justify-between">
+        <aside class="lg:col-span-5 bg-zinc-50/80 border-r border-zinc-200/80 p-6 sm:p-8 flex flex-col justify-between">
           <div class="space-y-4">
             
-            <!-- Section Header -->
+            <!-- Section Header (Limpio y directo) -->
             <div>
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-200/70 text-zinc-700 text-[10px] font-bold uppercase tracking-wider mb-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Prototipo
-              </div>
-              <h2 class="text-lg font-bold tracking-tight text-zinc-900">
-                Acceso Rápido por Rol
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+                Acceso Rápido
               </h2>
-              <p class="text-xs text-zinc-500 mt-0.5">
-                Selecciona un perfil para ingresar:
+              <p class="text-sm text-zinc-500 mt-1">
+                Selecciona un perfil:
               </p>
             </div>
 
-            <!-- User Cards List (Compact) -->
-            <div class="space-y-2">
+            <!-- User Cards List (Sin textos redundantes, más espacioso y claro) -->
+            <div class="space-y-2.5 pt-1">
               @for (user of mockUsers; track user.id) {
                 <div
                   (click)="selectUser(user)"
-                  class="p-2.5 sm:p-3 rounded-xl border transition-all duration-200 cursor-pointer text-left relative group"
+                  class="p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer text-left relative group"
                   [ngClass]="selectedUser()?.id === user.id 
                     ? 'bg-white border-zinc-950 ring-2 ring-zinc-950 shadow-xs' 
                     : 'bg-white/80 border-zinc-200/90 hover:bg-white hover:border-zinc-300'"
                 >
-                  <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center justify-between gap-3">
                     <!-- User Avatar + Info -->
-                    <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="flex items-center gap-3 min-w-0">
                       <div
-                        class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 transition-colors"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-colors"
                         [ngClass]="selectedUser()?.id === user.id ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-700 group-hover:bg-zinc-200'"
                       >
                         {{ user.name.charAt(0) }}
                       </div>
 
                       <div class="min-w-0">
-                        <h4 class="text-xs font-bold text-zinc-900 truncate">
+                        <h4 class="text-sm sm:text-base font-bold text-zinc-900 truncate">
                           {{ user.name }}
                         </h4>
-                        <p class="text-[11px] font-medium text-zinc-500">
+                        <p class="text-xs sm:text-sm font-medium text-zinc-500">
                           {{ getRoleLabel(user.role) }}
                         </p>
                       </div>
                     </div>
 
-                    <!-- Badge when selected -->
+                    <!-- Badge / Selector -->
                     @if (selectedUser()?.id === user.id) {
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-950 text-white flex-shrink-0">
-                        <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-950 text-white flex-shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         Elegido
                       </span>
                     } @else {
-                      <span class="text-[11px] text-zinc-300 group-hover:text-zinc-500 transition-colors font-medium">
+                      <span class="text-xs sm:text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors font-medium">
                         Elegir →
                       </span>
                     }
                   </div>
-
-                  <!-- Role Scope Description -->
-                  <p class="text-[11px] text-zinc-500 mt-2 pt-1.5 border-t border-zinc-100/90 leading-tight">
-                    {{ getRoleDescription(user.role) }}
-                  </p>
                 </div>
               }
             </div>
 
-          </div>
-
-          <!-- Left Column Footer Note -->
-          <div class="pt-3 mt-3 border-t border-zinc-200/70 text-[11px] text-zinc-400 flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-            </svg>
-            <span>Haz clic en un perfil para cargarlo.</span>
           </div>
         </aside>
 
         <!-- ═════════════════════════════════════════════════════════ -->
         <!-- COLUMNA DERECHA: Formulario de Inicio de Sesión          -->
         <!-- ═════════════════════════════════════════════════════════ -->
-        <main class="lg:col-span-7 bg-white p-5 sm:p-8 lg:p-10 flex items-center justify-center">
-          <div class="w-full max-w-sm space-y-5">
+        <main class="lg:col-span-7 bg-white p-6 sm:p-10 lg:p-12 flex items-center justify-center">
+          <div class="w-full max-w-md space-y-6">
             
             <!-- Clinic Branding & Title -->
-            <div class="text-center sm:text-left space-y-1">
-              <div class="inline-flex items-center justify-center w-10 h-10 bg-zinc-950 rounded-xl shadow-xs border border-zinc-800 mb-1">
+            <div class="text-center sm:text-left space-y-1.5">
+              <div class="inline-flex items-center justify-center w-11 h-11 bg-zinc-950 rounded-2xl shadow-xs border border-zinc-800 mb-1.5">
                 <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                 </svg>
               </div>
-              <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
                 Iniciar Sesión
               </h1>
-              <p class="text-xs text-zinc-500">
-                Estética Clinic · Sistema Médico & Administrativo
+              <p class="text-sm text-zinc-500">
+                Estética Clinic
               </p>
             </div>
 
-            <!-- Active Selected User Indicator Banner -->
+            <!-- Active Selected User Indicator Banner (Solo cuando está seleccionado) -->
             @if (selectedUser(); as user) {
-              <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/90 flex items-center justify-between gap-2 animate-fade-in">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <div class="w-7 h-7 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div class="p-3 rounded-2xl bg-zinc-50 border border-zinc-200/90 flex items-center justify-between gap-3 animate-fade-in">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-8 h-8 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                     {{ user.name.charAt(0) }}
                   </div>
                   <div class="min-w-0">
-                    <p class="text-xs font-bold text-zinc-900 truncate">
+                    <p class="text-sm font-bold text-zinc-900 truncate">
                       {{ user.name }}
                     </p>
-                    <p class="text-[10px] text-zinc-500 font-medium truncate">
+                    <p class="text-xs text-zinc-500 font-medium truncate">
                       {{ getRoleLabel(user.role) }}
                     </p>
                   </div>
                 </div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   Listo
                 </span>
-              </div>
-            } @else {
-              <div class="p-2.5 rounded-xl bg-zinc-50/60 border border-dashed border-zinc-200 text-center text-xs text-zinc-400">
-                Ningún usuario seleccionado.
               </div>
             }
 
             <!-- Prototype Validation Alert (Required by user) -->
             @if (errorMessage()) {
-              <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2.5 animate-slide-up shadow-xs">
-                <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-semibold flex items-center gap-3 animate-slide-up shadow-xs">
+                <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
                 <span>{{ errorMessage() }}</span>
@@ -155,50 +134,45 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
             }
 
             <!-- Login Form -->
-            <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-3.5">
+            <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
               <div>
-                <label class="label text-xs">Correo Electrónico</label>
+                <label class="label text-sm font-medium">Correo Electrónico</label>
                 <input
                   type="email"
                   formControlName="email"
-                  class="input-premium py-2 text-xs"
+                  class="input-premium py-2.5 text-sm"
                   placeholder="correo@esteticaclinic.com"
                   autocomplete="email"
                 />
               </div>
 
               <div>
-                <label class="label text-xs">Contraseña</label>
+                <label class="label text-sm font-medium">Contraseña</label>
                 <input
                   type="password"
                   formControlName="password"
-                  class="input-premium py-2 text-xs"
+                  class="input-premium py-2.5 text-sm"
                   placeholder="••••••••"
                   autocomplete="current-password"
                 />
               </div>
 
-              <div class="flex items-center justify-between text-xs pt-0.5">
-                <label class="flex items-center gap-1.5 cursor-pointer text-zinc-600">
-                  <input type="checkbox" class="w-3.5 h-3.5 rounded border-zinc-300 text-black focus:ring-black/10" checked />
-                  <span class="text-[11px]">Recordarme</span>
+              <div class="flex items-center justify-between text-xs sm:text-sm pt-1">
+                <label class="flex items-center gap-2 cursor-pointer text-zinc-600">
+                  <input type="checkbox" class="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black/10" checked />
+                  <span>Recordarme</span>
                 </label>
-                <span class="text-[11px] text-zinc-400 hover:text-zinc-600 cursor-pointer">¿Olvidaste tu contraseña?</span>
+                <span class="text-zinc-400 hover:text-zinc-600 cursor-pointer">¿Olvidaste tu contraseña?</span>
               </div>
 
               <!-- Iniciar Sesión Submit Button -->
               <button
                 type="submit"
-                class="btn-primary w-full py-2.5 text-xs font-bold shadow-sm transition-all mt-1 cursor-pointer"
+                class="btn-primary w-full py-3 text-sm sm:text-base font-bold shadow-sm transition-all mt-2 cursor-pointer"
               >
                 Iniciar Sesión
               </button>
             </form>
-
-            <!-- Footer Legal -->
-            <p class="text-center text-[11px] text-zinc-400 pt-2">
-              © 2026 Estética Clinic. Prototipo Funcional.
-            </p>
 
           </div>
         </main>
