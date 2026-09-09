@@ -389,4 +389,30 @@ export class MockDataService {
     };
     this._expenses.update(expenses => [...expenses, newExpense]);
   }
+
+  addClinicalEvolution(patientId: string, evolution: Omit<ClinicalSession, 'id'>): void {
+    const newSession: ClinicalSession = {
+      ...evolution,
+      id: `cs-${Date.now()}`,
+    };
+
+    this._patients.update(patients =>
+      patients.map(p => {
+        if (p.id !== patientId) return p;
+        return {
+          ...p,
+          clinicalHistory: [newSession, ...p.clinicalHistory],
+          treatments: p.treatments.map(t => {
+            if (t.id !== evolution.treatmentId) return t;
+            const updatedCompleted = Math.min(t.totalSessions, t.completedSessions + 1);
+            return {
+              ...t,
+              completedSessions: updatedCompleted,
+              status: updatedCompleted >= t.totalSessions ? 'completed' : t.status,
+            };
+          }),
+        };
+      })
+    );
+  }
 }
