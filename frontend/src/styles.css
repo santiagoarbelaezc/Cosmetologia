@@ -10,6 +10,7 @@
 }
 
 html {
+  font-size: 16.5px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -19,6 +20,7 @@ body {
   @apply bg-white text-zinc-900 font-sans;
   margin: 0;
   padding: 0;
+  font-size: 0.95rem;
 }
 
 /* ─── Premium Input Styles ───────────────────────────── */

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MockDataService } from '../../core/services/mock-data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PermissionsService } from '../../core/services/permissions.service';
 import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
 import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.component';
 import { ExpenseCategory } from '../../core/models/finance.model';
@@ -12,114 +13,134 @@ import { ExpenseCategory } from '../../core/models/finance.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CurrencyCopPipe, PillTabsComponent],
   template: `
-    <div class="animate-fade-in">
+    <div class="animate-fade-in space-y-8">
+
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight text-zinc-900">Gastos e Insumos</h1>
-          <p class="text-sm text-zinc-400 mt-0.5">Control de egresos y balance de caja</p>
+      <section>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900">Gastos e Insumos</h1>
+            <p class="text-sm text-zinc-400 mt-0.5">Control de egresos y balance de caja</p>
+          </div>
+          <button (click)="showAddExpense.set(true)" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Agregar Gasto
+          </button>
         </div>
-        <button (click)="showAddExpense.set(true)" class="btn-primary">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Agregar Gasto
-        </button>
-      </div>
+      </section>
 
-      <!-- Financial Summary Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="card p-5">
-          <p class="micro-label mb-1">Total Cobrado</p>
-          <p class="text-2xl font-bold tracking-tight text-zinc-900">
-            {{ dataService.financialSummary().totalCollected | currencyCop }}
-          </p>
-          <p class="text-[10px] text-zinc-400 mt-1">Ingresos por tratamientos</p>
-        </div>
-        <div class="card p-5">
-          <p class="micro-label mb-1">Total Gastos</p>
-          <p class="text-2xl font-bold tracking-tight text-rose-500">
-            {{ dataService.financialSummary().totalExpenses | currencyCop }}
-          </p>
-          <p class="text-[10px] text-zinc-400 mt-1">Egresos acumulados</p>
-        </div>
-        <div class="card p-5">
-          <p class="micro-label mb-1">Balance Neto en Caja</p>
-          <p class="text-2xl font-bold tracking-tight"
-             [class.text-emerald-600]="dataService.financialSummary().netBalance >= 0"
-             [class.text-rose-600]="dataService.financialSummary().netBalance < 0"
-          >
-            {{ dataService.financialSummary().netBalance | currencyCop }}
-          </p>
-          <p class="text-[10px] text-zinc-400 mt-1">Cobrado − Gastos</p>
-        </div>
-      </div>
+      <!-- Financial Summary -->
+      <section>
+        <div class="grid grid-cols-1 gap-4"
+             [ngClass]="permissions.canViewNetBalance() ? 'sm:grid-cols-3' : 'sm:grid-cols-2'">
+          <!-- Total Cobrado -->
+          <div class="card p-5">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                </svg>
+              </div>
+              <p class="micro-label">Total Cobrado</p>
+            </div>
+            <p class="text-2xl font-bold tracking-tight text-zinc-900">
+              {{ dataService.financialSummary().totalCollected | currencyCop }}
+            </p>
+            <p class="text-[10px] text-zinc-400 mt-1">Ingresos por tratamientos</p>
+          </div>
 
-      <!-- Category Filter Tabs -->
-      <div class="mb-6">
-        <app-pill-tabs
-          [tabs]="categoryTabs"
-          [activeTab]="activeFilter()"
-          (tabChange)="activeFilter.set($event)"
-        />
-      </div>
+          <!-- Total Gastos -->
+          <div class="card p-5">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center">
+                <svg class="w-4.5 h-4.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p class="micro-label">Total Gastos</p>
+            </div>
+            <p class="text-2xl font-bold tracking-tight text-rose-500">
+              {{ dataService.financialSummary().totalExpenses | currencyCop }}
+            </p>
+            <p class="text-[10px] text-zinc-400 mt-1">Egresos acumulados</p>
+          </div>
 
-      <!-- Expenses Table -->
-      <div class="card overflow-hidden">
-        <!-- Table Header -->
-        <div class="grid grid-cols-12 gap-4 px-5 py-3 bg-zinc-50/80 border-b border-zinc-200/80">
-          <span class="col-span-2 micro-label">Fecha</span>
-          <span class="col-span-4 micro-label">Concepto</span>
-          <span class="col-span-2 micro-label">Categoría</span>
-          <span class="col-span-2 micro-label text-right">Monto</span>
-          <span class="col-span-2 micro-label text-right">Registrado por</span>
+          <!-- Balance Neto — SOLO GERENTE -->
+          @if (permissions.canViewNetBalance()) {
+            <div class="card p-5 border-black/10">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 rounded-xl bg-zinc-900 flex items-center justify-center">
+                  <svg class="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                  </svg>
+                </div>
+                <p class="micro-label">Balance Neto</p>
+              </div>
+              <p class="text-2xl font-bold tracking-tight"
+                 [class.text-emerald-600]="dataService.financialSummary().netBalance >= 0"
+                 [class.text-rose-600]="dataService.financialSummary().netBalance < 0">
+                {{ dataService.financialSummary().netBalance | currencyCop }}
+              </p>
+              <p class="text-[10px] text-zinc-400 mt-1">Utilidad del negocio</p>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Category Filter -->
+      <section>
+        <div class="mb-4">
+          <app-pill-tabs
+            [tabs]="categoryTabs"
+            [activeTab]="activeFilter()"
+            (tabChange)="activeFilter.set($event)"
+          />
         </div>
 
-        <!-- Table Body -->
-        @for (expense of filteredExpenses(); track expense.id) {
-          <div class="grid grid-cols-12 gap-4 px-5 py-4 border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50/50 transition-colors">
-            <span class="col-span-2 text-sm text-zinc-500">{{ expense.date | date:'d MMM' }}</span>
-            <span class="col-span-4 text-sm font-medium text-zinc-800">{{ expense.concept }}</span>
-            <span class="col-span-2">
-              <span [class]="getCategoryBadgeClass(expense.category)">
-                {{ getCategoryLabel(expense.category) }}
+        <!-- Expenses Table -->
+        <div class="card overflow-hidden">
+          <div class="grid grid-cols-12 gap-4 px-5 py-3 bg-zinc-50/80 border-b border-zinc-200/80">
+            <span class="col-span-2 micro-label">Fecha</span>
+            <span class="col-span-4 micro-label">Concepto</span>
+            <span class="col-span-2 micro-label">Categoría</span>
+            <span class="col-span-2 micro-label text-right">Monto</span>
+            <span class="col-span-2 micro-label text-right">Registrado por</span>
+          </div>
+
+          @for (expense of filteredExpenses(); track expense.id) {
+            <div class="grid grid-cols-12 gap-4 px-5 py-4 border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50/50 transition-colors">
+              <span class="col-span-2 text-sm text-zinc-500">{{ expense.date | date:'d MMM' }}</span>
+              <span class="col-span-4 text-sm font-medium text-zinc-800">{{ expense.concept }}</span>
+              <span class="col-span-2">
+                <span [ngClass]="getCategoryBadgeClass(expense.category)">
+                  {{ getCategoryLabel(expense.category) }}
+                </span>
               </span>
-            </span>
-            <span class="col-span-2 text-sm font-bold text-zinc-900 text-right">{{ expense.amount | currencyCop }}</span>
-            <span class="col-span-2 text-xs text-zinc-400 text-right">{{ expense.registeredBy }}</span>
-          </div>
-        }
+              <span class="col-span-2 text-sm font-bold text-zinc-900 text-right">{{ expense.amount | currencyCop }}</span>
+              <span class="col-span-2 text-xs text-zinc-400 text-right">{{ expense.registeredBy }}</span>
+            </div>
+          }
 
-        @if (filteredExpenses().length === 0) {
-          <div class="text-center py-12">
-            <p class="text-sm text-zinc-400">No hay gastos en esta categoría</p>
-          </div>
-        }
-      </div>
+          @if (filteredExpenses().length === 0) {
+            <div class="text-center py-12">
+              <p class="text-sm text-zinc-400">No hay gastos en esta categoría</p>
+            </div>
+          }
+        </div>
+      </section>
     </div>
 
     <!-- Add Expense Modal -->
     @if (showAddExpense()) {
-      <!-- Backdrop -->
-      <div
-        class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 animate-fade-in"
-        (click)="showAddExpense.set(false)"
-      ></div>
-
-      <!-- Modal -->
+      <div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 animate-fade-in" (click)="showAddExpense.set(false)"></div>
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div
-          class="bg-white rounded-3xl shadow-2xl w-full max-w-md pointer-events-auto animate-scale-in"
-          (click)="$event.stopPropagation()"
-        >
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md pointer-events-auto animate-scale-in" (click)="$event.stopPropagation()">
           <div class="px-8 pt-8 pb-4">
             <div class="flex items-center justify-between mb-1">
               <h2 class="text-lg font-bold tracking-tight text-zinc-900">Agregar Gasto</h2>
-              <button
-                type="button"
-                (click)="showAddExpense.set(false)"
-                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors"
-              >
+              <button type="button" (click)="showAddExpense.set(false)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors">
                 <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -132,7 +153,6 @@ import { ExpenseCategory } from '../../core/models/finance.model';
               <label class="label">Concepto</label>
               <input type="text" formControlName="concept" class="input-premium" placeholder="Descripción del gasto" />
             </div>
-
             <div class="mb-5">
               <label class="label">Categoría</label>
               <select formControlName="category" class="input-premium">
@@ -141,32 +161,16 @@ import { ExpenseCategory } from '../../core/models/finance.model';
                 <option value="administrativo">Administrativo</option>
               </select>
             </div>
-
             <div class="mb-6">
               <label class="label">Monto</label>
               <div class="relative">
                 <span class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-300">$</span>
-                <input
-                  type="text"
-                  formControlName="amount"
-                  class="input-premium-lg pl-10"
-                  placeholder="0"
-                  (input)="formatExpenseAmount($event)"
-                />
+                <input type="text" formControlName="amount" class="input-premium-lg pl-10" placeholder="0" (input)="formatExpenseAmount($event)" />
               </div>
             </div>
-
             <div class="flex items-center gap-3">
-              <button type="button" (click)="showAddExpense.set(false)" class="btn-ghost flex-1">
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="btn-primary flex-1"
-                [disabled]="expenseForm.invalid"
-              >
-                Registrar Gasto
-              </button>
+              <button type="button" (click)="showAddExpense.set(false)" class="btn-ghost flex-1">Cancelar</button>
+              <button type="submit" class="btn-primary flex-1" [disabled]="expenseForm.invalid">Registrar Gasto</button>
             </div>
           </form>
         </div>
@@ -177,6 +181,7 @@ import { ExpenseCategory } from '../../core/models/finance.model';
 export class ExpensesComponent {
   readonly dataService = inject(MockDataService);
   readonly authService = inject(AuthService);
+  readonly permissions = inject(PermissionsService);
   private readonly fb = inject(FormBuilder);
 
   readonly showAddExpense = signal(false);

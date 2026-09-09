@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MockDataService } from '../../core/services/mock-data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PermissionsService } from '../../core/services/permissions.service';
 import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.component';
 import { ProgressBarComponent } from '../../shared/components/progress-bar/progress-bar.component';
 import { PaymentModalComponent, PaymentFormData } from '../../shared/components/payment-modal/payment-modal.component';
 import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
-import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient.model';
+import { Patient, TreatmentCategory } from '../../core/models/patient.model';
 
 @Component({
   selector: 'app-patient-detail',
@@ -21,26 +22,25 @@ import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient
   ],
   template: `
     @if (patient(); as p) {
-      <div class="animate-fade-in">
+      <div class="animate-fade-in space-y-6">
         <!-- Back Button -->
-        <button (click)="goBack()" class="btn-ghost mb-6 -ml-2">
+        <button (click)="goBack()" class="btn-ghost -ml-2">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
-          Volver al Dashboard
+          Volver
         </button>
 
-        <!-- Patient Header Card -->
-        <div class="card p-6 mb-6">
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Patient Header Card                            -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <section class="card p-6">
           <div class="flex flex-col sm:flex-row items-start gap-5">
-            <!-- Avatar -->
             <div class="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center flex-shrink-0">
               <span class="text-xl font-bold text-zinc-500">
                 {{ p.firstName.charAt(0) }}{{ p.lastName.charAt(0) }}
               </span>
             </div>
-
-            <!-- Info -->
             <div class="flex-1 min-w-0">
               <h1 class="text-xl font-bold tracking-tight text-zinc-900">
                 {{ p.firstName }} {{ p.lastName }}
@@ -66,28 +66,28 @@ import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient
                 </span>
               </div>
             </div>
-
-            <!-- Treatments Count -->
-            <div class="flex items-center gap-3 flex-shrink-0">
-              <div class="text-right">
-                <p class="micro-label">Tratamientos</p>
-                <p class="text-2xl font-bold text-zinc-900">{{ p.treatments.length }}</p>
-              </div>
+            <div class="text-right flex-shrink-0">
+              <p class="micro-label">Tratamientos</p>
+              <p class="text-2xl font-bold text-zinc-900">{{ visibleTreatments().length }}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Financial Card (Admin Only) -->
-        @if (authService.isAdmin()) {
-          <div class="card p-6 mb-6">
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Financial Card (Gerente + Administradora ONLY) -->
+        <!-- ═══════════════════════════════════════════════ -->
+        @if (permissions.canViewFinancials()) {
+          <section class="card p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="section-title">Estado de Cuenta</h2>
-              <button (click)="showPaymentModal.set(true)" class="btn-primary text-xs px-4 py-2">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Registrar Abono
-              </button>
+              @if (permissions.canRegisterPayment()) {
+                <button (click)="showPaymentModal.set(true)" class="btn-primary text-xs px-4 py-2">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Registrar Abono
+                </button>
+              }
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -113,91 +113,109 @@ import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         }
 
-        <!-- Treatment Category Tabs -->
-        <div class="mb-6">
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Treatment List (filtered by specialty)         -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <section>
           <div class="flex items-center justify-between mb-4">
             <h2 class="section-title">Tratamientos</h2>
           </div>
-          <app-pill-tabs
-            [tabs]="treatmentTabs"
-            [activeTab]="activeCategory()"
-            (tabChange)="activeCategory.set($event)"
-          />
-        </div>
 
-        <!-- Treatment List -->
-        <div class="space-y-4 mb-8">
-          @for (treatment of filteredTreatments(); track treatment.id) {
-            <div class="card p-5 animate-slide-up">
-              <div class="flex items-start justify-between mb-3">
-                <div class="min-w-0 flex-1 mr-4">
-                  <h3 class="text-sm font-bold text-zinc-900">{{ treatment.name }}</h3>
-                  <p class="micro-label mt-1">
-                    {{ treatment.category === 'corporal-cosmetologia' ? 'Cosmetología' : 'Procedimiento Médico' }}
-                  </p>
-                </div>
-                <span
-                  [class]="treatment.status === 'active' ? 'badge-active' :
-                           treatment.status === 'completed' ? 'badge-completed' : 'badge-paused'"
-                >
-                  {{ treatment.status === 'active' ? 'Activo' :
-                     treatment.status === 'completed' ? 'Completado' : 'Pausado' }}
-                </span>
-              </div>
-
-              <app-progress-bar
-                [current]="treatment.completedSessions"
-                [total]="treatment.totalSessions"
+          <!-- Pill tabs: only show if user can see BOTH categories -->
+          @if (availableTabs().length > 1) {
+            <div class="mb-5">
+              <app-pill-tabs
+                [tabs]="availableTabs()"
+                [activeTab]="activeCategory()"
+                (tabChange)="activeCategory.set($event)"
               />
+            </div>
+          } @else if (availableTabs().length === 1) {
+            <p class="micro-label mb-4">{{ availableTabs()[0] }}</p>
+          }
 
-              <!-- Treatment Financials (Admin Only) -->
-              @if (authService.isAdmin()) {
-                <div class="flex items-center gap-6 mt-4 pt-3 border-t border-zinc-100">
-                  <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Costo</p>
-                    <p class="text-sm font-bold text-zinc-800">{{ treatment.totalCost | currencyCop }}</p>
+          <div class="space-y-4">
+            @for (treatment of filteredTreatments(); track treatment.id) {
+              <div class="card p-5 animate-slide-up">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="min-w-0 flex-1 mr-4">
+                    <h3 class="text-sm font-bold text-zinc-900">{{ treatment.name }}</h3>
+                    <p class="micro-label mt-1">
+                      {{ treatment.category === 'corporal-cosmetologia' ? 'Cosmetología' : 'Procedimiento Médico' }}
+                    </p>
                   </div>
-                  <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Pagado</p>
-                    <p class="text-sm font-bold text-emerald-600">{{ treatment.totalPaid | currencyCop }}</p>
-                  </div>
-                  @if (treatment.totalCost - treatment.totalPaid > 0) {
-                    <div>
-                      <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Pendiente</p>
-                      <p class="text-sm font-bold text-rose-500">{{ treatment.totalCost - treatment.totalPaid | currencyCop }}</p>
-                    </div>
-                  }
+                  <span
+                    [ngClass]="treatment.status === 'active' ? 'badge-active' :
+                               treatment.status === 'completed' ? 'badge-completed' : 'badge-paused'"
+                  >
+                    {{ treatment.status === 'active' ? 'Activo' :
+                       treatment.status === 'completed' ? 'Completado' : 'Pausado' }}
+                  </span>
                 </div>
-              }
-            </div>
-          }
 
-          @if (filteredTreatments().length === 0) {
-            <div class="text-center py-12">
-              <p class="text-sm text-zinc-400">No hay tratamientos en esta categoría</p>
-            </div>
-          }
-        </div>
+                <app-progress-bar
+                  [current]="treatment.completedSessions"
+                  [total]="treatment.totalSessions"
+                />
 
-        <!-- Clinical History -->
-        <div class="mb-8">
-          <h2 class="section-title mb-4">Historial de Evolución</h2>
+                <!-- Treatment Financials — Gerente + Administradora only -->
+                @if (permissions.canViewFinancials()) {
+                  <div class="flex items-center gap-6 mt-4 pt-3 border-t border-zinc-100">
+                    <div>
+                      <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Costo</p>
+                      <p class="text-sm font-bold text-zinc-800">{{ treatment.totalCost | currencyCop }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Pagado</p>
+                      <p class="text-sm font-bold text-emerald-600">{{ treatment.totalPaid | currencyCop }}</p>
+                    </div>
+                    @if (treatment.totalCost - treatment.totalPaid > 0) {
+                      <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Pendiente</p>
+                        <p class="text-sm font-bold text-rose-500">{{ treatment.totalCost - treatment.totalPaid | currencyCop }}</p>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            @if (filteredTreatments().length === 0) {
+              <div class="text-center py-12 card">
+                <p class="text-sm text-zinc-400">No hay tratamientos en esta categoría</p>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Clinical History                               -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Historial de Evolución</h2>
+            @if (permissions.canRegisterEvolution()) {
+              <button class="btn-secondary text-xs px-4 py-2">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Registrar Evolución
+              </button>
+            }
+          </div>
+
           <div class="relative">
-            <!-- Timeline Line -->
             <div class="absolute left-5 top-0 bottom-0 w-px bg-zinc-200"></div>
 
             <div class="space-y-0">
-              @for (session of p.clinicalHistory; track session.id) {
+              @for (session of visibleHistory(); track session.id) {
                 <div class="relative flex gap-4 pb-6">
-                  <!-- Timeline Dot -->
                   <div class="relative z-10 w-10 h-10 rounded-full bg-white border-2 border-zinc-200 flex items-center justify-center flex-shrink-0">
                     <span class="text-xs font-bold text-zinc-500">{{ session.sessionNumber }}</span>
                   </div>
-
-                  <!-- Content -->
                   <div class="card flex-1 p-4">
                     <div class="flex items-center justify-between mb-2">
                       <div class="flex items-center gap-2">
@@ -216,13 +234,13 @@ import { Patient, Treatment, TreatmentCategory } from '../../core/models/patient
               }
             </div>
 
-            @if (p.clinicalHistory.length === 0) {
+            @if (visibleHistory().length === 0) {
               <div class="text-center py-12 ml-14">
                 <p class="text-sm text-zinc-400">Sin registros de evolución aún</p>
               </div>
             }
           </div>
-        </div>
+        </section>
       </div>
 
       <!-- Payment Modal -->
@@ -253,24 +271,43 @@ export class PatientDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dataService = inject(MockDataService);
-  readonly authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
+  readonly permissions = inject(PermissionsService);
 
   readonly patient = signal<Patient | undefined>(undefined);
   readonly showPaymentModal = signal(false);
-  readonly activeCategory = signal<string>('Corporal / Cosmetología');
+  readonly activeCategory = signal<string>('');
 
-  readonly treatmentTabs = ['Corporal / Cosmetología', 'Procedimientos Médicos'];
-
-  private readonly categoryMap: Record<string, TreatmentCategory> = {
+  private readonly TAB_LABELS: Record<string, TreatmentCategory> = {
     'Corporal / Cosmetología': 'corporal-cosmetologia',
     'Procedimientos Médicos': 'medico-no-invasivo',
   };
 
-  readonly filteredTreatments = computed(() => {
+  private readonly CATEGORY_TO_TAB: Record<TreatmentCategory, string> = {
+    'corporal-cosmetologia': 'Corporal / Cosmetología',
+    'medico-no-invasivo': 'Procedimientos Médicos',
+  };
+
+  /** Only the tabs the current user is allowed to see */
+  readonly availableTabs = computed(() => {
+    const allowed = this.permissions.visibleTreatmentCategories();
+    return allowed.map(cat => this.CATEGORY_TO_TAB[cat]);
+  });
+
+  /** All treatments the user can see (across all their allowed categories) */
+  readonly visibleTreatments = computed(() => {
     const p = this.patient();
     if (!p) return [];
-    const cat = this.categoryMap[this.activeCategory()];
-    return p.treatments.filter(t => t.category === cat);
+    const allowed = this.permissions.visibleTreatmentCategories();
+    return p.treatments.filter(t => allowed.includes(t.category));
+  });
+
+  /** Treatments filtered by the active tab */
+  readonly filteredTreatments = computed(() => {
+    const active = this.activeCategory();
+    const category = this.TAB_LABELS[active];
+    if (!category) return this.visibleTreatments();
+    return this.visibleTreatments().filter(t => t.category === category);
   });
 
   readonly accountBalance = computed(() => {
@@ -279,10 +316,29 @@ export class PatientDetailComponent implements OnInit {
     return this.dataService.getAccountBalance(p.id);
   });
 
+  /** Clinical sessions filtered by the user's allowed treatment categories */
+  readonly visibleHistory = computed(() => {
+    const p = this.patient();
+    if (!p) return [];
+    const allowed = this.permissions.visibleTreatmentCategories();
+    // Map treatment IDs to their categories
+    const treatmentCategoryMap = new Map(p.treatments.map(t => [t.id, t.category]));
+    return p.clinicalHistory.filter(session => {
+      const cat = treatmentCategoryMap.get(session.treatmentId);
+      return cat ? allowed.includes(cat) : true;
+    });
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.patient.set(this.dataService.getPatientById(id));
+    }
+
+    // Set default active tab to the user's first allowed category
+    const tabs = this.availableTabs();
+    if (tabs.length > 0) {
+      this.activeCategory.set(tabs[0]);
     }
   }
 
