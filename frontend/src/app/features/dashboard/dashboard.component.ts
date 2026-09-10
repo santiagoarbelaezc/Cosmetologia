@@ -18,32 +18,32 @@ import { ROLE_LABELS } from '../../core/models/user.model';
       <!-- ═════════════════════════════════════════════════════════ -->
       <!-- TOP BANNER: Personalized Role Greeting                   -->
       <!-- ═════════════════════════════════════════════════════════ -->
-      <section class="card p-6 sm:p-7 bg-white border border-zinc-200/90 shadow-sm rounded-2xl">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <section class="card p-4 sm:p-7 bg-white border border-zinc-200/90 shadow-sm rounded-2xl">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5">
           <div>
-            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
               <span class="micro-label">{{ greeting() }}</span>
               <span class="text-zinc-300">·</span>
-              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-800 uppercase tracking-wider">
+              <span class="text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-800 uppercase tracking-wider">
                 {{ roleBadgeLabel() }}
               </span>
               <span class="text-zinc-300">·</span>
-              <span class="text-xs text-zinc-400 font-medium">{{ currentDateFormatted() }}</span>
+              <span class="text-[11px] sm:text-xs text-zinc-400 font-medium">{{ currentDateFormatted() }}</span>
             </div>
 
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+            <h1 class="text-xl sm:text-3xl font-bold tracking-tight text-zinc-900">
               {{ authService.currentUser()?.name }}
             </h1>
-            <p class="text-sm text-zinc-500 mt-1 max-w-2xl">
+            <p class="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl">
               {{ roleHeadline() }}
             </p>
           </div>
 
           <!-- Quick Navigation Actions -->
-          <div class="flex flex-wrap items-center gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <button
               (click)="navigateTo('/pacientes')"
-              class="btn-primary text-xs sm:text-sm px-5 py-2.5 shadow-sm"
+              class="btn-primary text-xs sm:text-sm px-4 sm:px-5 py-2.5 shadow-sm w-full sm:w-auto justify-center"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -54,7 +54,7 @@ import { ROLE_LABELS } from '../../core/models/user.model';
             @if (permissions.canViewExpenses()) {
               <button
                 (click)="navigateTo('/gastos')"
-                class="btn-secondary text-xs sm:text-sm px-4 py-2.5"
+                class="btn-secondary text-xs sm:text-sm px-4 py-2.5 w-full sm:w-auto justify-center"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -23,15 +23,25 @@ import { ClientService } from '../../../core/services/client.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
+    <!-- Mobile Backdrop Overlay -->
+    @if (sidebarService.isMobileOpen()) {
+      <div
+        (click)="sidebarService.closeMobile()"
+        class="md:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-fade-in"
+      ></div>
+    }
+
     <aside
-      class="fixed left-0 top-0 h-screen flex flex-col bg-white border-r border-zinc-200/90 transition-all duration-300 ease-out z-40 select-none shadow-[1px_0_10px_rgba(0,0,0,0.02)]"
+      class="fixed left-0 top-0 h-screen flex flex-col bg-white border-r border-zinc-200/90 transition-all duration-300 ease-out z-50 select-none shadow-xl md:shadow-[1px_0_10px_rgba(0,0,0,0.02)] md:translate-x-0"
       [class.w-72]="!sidebarService.isCollapsed()"
       [class.w-20]="sidebarService.isCollapsed()"
+      [class.-translate-x-full]="!sidebarService.isMobileOpen()"
+      [class.translate-x-0]="sidebarService.isMobileOpen()"
     >
       <!-- ═════════════════════════════════════════════════════════ -->
       <!-- BRAND & CLINIC IDENTITY                                   -->
       <!-- ═════════════════════════════════════════════════════════ -->
-      <div class="px-5 py-5 border-b border-zinc-100 flex items-center justify-between gap-3">
+      <div class="px-5 py-4 border-b border-zinc-100 flex items-center justify-between gap-3">
         @if (!isCollapsed()) {
           <div class="min-w-0">
             <div class="flex items-center gap-1.5">
@@ -47,6 +57,16 @@ import { ClientService } from '../../../core/services/client.service';
             <span class="font-black text-sm text-zinc-900">M</span>
           </div>
         }
+
+        <!-- Mobile Close Button (Visible on < md) -->
+        <button
+          type="button"
+          (click)="sidebarService.closeMobile()"
+          class="md:hidden w-8 h-8 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-950 flex items-center justify-center cursor-pointer transition-colors"
+          title="Cerrar menú"
+        >
+          ✕
+        </button>
       </div>
 
       <!-- ═════════════════════════════════════════════════════════ -->
@@ -65,6 +85,7 @@ import { ClientService } from '../../../core/services/client.service';
           @for (item of mainNavItems(); track item.route) {
             <a
               [routerLink]="item.route"
+              (click)="sidebarService.closeMobile()"
               routerLinkActive="active-nav-link"
               [routerLinkActiveOptions]="{ exact: item.exact }"
               class="nav-link-base group relative"
@@ -107,6 +128,7 @@ import { ClientService } from '../../../core/services/client.service';
             @for (item of financeNavItems(); track item.route) {
               <a
                 [routerLink]="item.route"
+                (click)="sidebarService.closeMobile()"
                 routerLinkActive="active-nav-link"
                 [routerLinkActiveOptions]="{ exact: item.exact }"
                 class="nav-link-base group"

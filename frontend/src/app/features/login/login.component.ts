@@ -15,19 +15,52 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
       <!-- Contenedor Principal Más Ancho y Limpio -->
       <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl border border-zinc-200/90 overflow-hidden grid grid-cols-1 lg:grid-cols-12 animate-fade-in">
         
+        <!-- Mobile Brand Header & Segmented Tab Switcher (< lg) -->
+        <div class="lg:hidden col-span-1 p-5 border-b border-zinc-100 text-center space-y-1 bg-white">
+          <h1 class="text-xl font-black tracking-tight text-zinc-950 uppercase">
+            Mantra Group
+          </h1>
+          <p class="text-[10.5px] font-bold tracking-wider text-amber-700 uppercase">
+            Centro Estético Corporal y Facial
+          </p>
+          <div class="pt-3.5 flex justify-center">
+            <div class="grid grid-cols-2 p-1 bg-zinc-100 rounded-xl w-full max-w-xs text-xs font-semibold">
+              <button
+                type="button"
+                (click)="activeMobileTab.set('quick')"
+                class="py-2 rounded-lg transition-all cursor-pointer"
+                [ngClass]="activeMobileTab() === 'quick' ? 'bg-white text-zinc-950 shadow-xs font-bold' : 'text-zinc-500 hover:text-zinc-800'"
+              >
+                Acceso Rápido
+              </button>
+              <button
+                type="button"
+                (click)="activeMobileTab.set('form')"
+                class="py-2 rounded-lg transition-all cursor-pointer"
+                [ngClass]="activeMobileTab() === 'form' ? 'bg-white text-zinc-950 shadow-xs font-bold' : 'text-zinc-500 hover:text-zinc-800'"
+              >
+                Con Correo
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- ═════════════════════════════════════════════════════════ -->
         <!-- COLUMNA IZQUIERDA: Acceso Rápido                          -->
         <!-- ═════════════════════════════════════════════════════════ -->
-        <aside class="lg:col-span-5 bg-zinc-50/80 border-r border-zinc-200/80 p-6 sm:p-8 flex flex-col justify-between">
+        <aside
+          class="lg:col-span-5 bg-zinc-50/80 border-r border-zinc-200/80 p-5 sm:p-8 flex flex-col justify-between"
+          [ngClass]="activeMobileTab() === 'quick' ? 'block' : 'hidden lg:flex'"
+        >
           <div class="space-y-4">
             
             <!-- Section Header (Limpio y directo) -->
             <div>
-              <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+              <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-zinc-900">
                 Acceso Rápido
               </h2>
-              <p class="text-sm text-zinc-500 mt-1">
-                Haz clic en un perfil para ingresar directamente:
+              <p class="text-xs sm:text-sm text-zinc-500 mt-1">
+                Toca un perfil para ingresar directamente:
               </p>
             </div>
 
@@ -73,11 +106,14 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
         <!-- ═════════════════════════════════════════════════════════ -->
         <!-- COLUMNA DERECHA: Formulario de Inicio de Sesión          -->
         <!-- ═════════════════════════════════════════════════════════ -->
-        <main class="lg:col-span-7 bg-white p-6 sm:p-10 lg:p-12 flex items-center justify-center">
+        <main
+          class="lg:col-span-7 bg-white p-5 sm:p-10 lg:p-12 flex items-center justify-center"
+          [ngClass]="activeMobileTab() === 'form' ? 'block' : 'hidden lg:flex'"
+        >
           <div class="w-full max-w-md space-y-6">
             
-            <!-- Clinic Branding & Title -->
-            <div class="text-center sm:text-left space-y-2">
+            <!-- Clinic Branding & Title (Desktop Only) -->
+            <div class="hidden lg:block text-left space-y-2">
               <div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-950 uppercase">
                   Mantra Group
@@ -189,6 +225,7 @@ export class LoginComponent {
   readonly mockUsers: User[] = this.authService.getMockUsers();
   readonly selectedUser = signal<User | null>(null);
   readonly errorMessage = signal('');
+  readonly activeMobileTab = signal<'quick' | 'form'>('quick');
 
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],

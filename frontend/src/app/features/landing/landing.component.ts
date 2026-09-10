@@ -17,21 +17,21 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
       <!-- NAVBAR SUPERIOR PREMIUM CON AMBIENTE MANTRA               -->
       <!-- ═════════════════════════════════════════════════════════ -->
       <header class="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80">
-        <div class="max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-16 h-20 sm:h-22 flex items-center justify-between">
+        <div class="max-w-[1500px] mx-auto px-4 sm:px-10 lg:px-16 h-20 sm:h-22 flex items-center justify-between">
           
           <!-- Brand Typographic Identity (Sin Imagen de Logo) -->
-          <a routerLink="/" class="flex flex-col justify-center group">
-            <span class="font-black text-xl sm:text-2xl tracking-tight text-white block leading-tight group-hover:text-amber-300 transition-colors uppercase">
+          <a routerLink="/" class="flex flex-col justify-center group min-w-0 pr-2">
+            <span class="font-black text-lg sm:text-2xl tracking-tight text-white block leading-tight group-hover:text-amber-300 transition-colors uppercase truncate">
               MANTRA GROUP
             </span>
-            <span class="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-amber-500 font-bold block mt-0.5">
+            <span class="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-amber-500 font-bold block mt-0.5 truncate">
               Centro Estético Corporal y Facial
             </span>
           </a>
 
-          <!-- Quick Navigation & Staff Access (Sin Horarios) -->
-          <div class="flex items-center gap-5 sm:gap-7">
-            <nav class="hidden md:flex items-center gap-7 text-xs sm:text-sm font-semibold tracking-wide text-zinc-400">
+          <!-- Desktop Quick Navigation & Staff Access (Hidden on < md) -->
+          <div class="hidden md:flex items-center gap-5 sm:gap-7">
+            <nav class="flex items-center gap-7 text-xs sm:text-sm font-semibold tracking-wide text-zinc-400">
               <a href="#servicios" class="hover:text-amber-300 transition-colors">Procedimientos</a>
               <a href="#concepto" class="hover:text-amber-300 transition-colors">Espacio Mantra</a>
               <a href="#especialistas" class="hover:text-amber-300 transition-colors">Especialistas</a>
@@ -52,53 +52,128 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
               Portal Staff →
             </a>
           </div>
+
+          <!-- Mobile Actions (< md) -->
+          <div class="flex md:hidden items-center gap-2">
+            <button
+              type="button"
+              (click)="openBookingModal()"
+              class="rounded-full bg-amber-400 text-zinc-950 text-xs font-bold px-3.5 py-2 transition-colors cursor-pointer active:scale-95"
+            >
+              Cita
+            </button>
+
+            <button
+              type="button"
+              (click)="toggleMobileMenu()"
+              class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center justify-center cursor-pointer active:scale-95"
+              title="Menú"
+            >
+              @if (!isMobileMenuOpen()) {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+              } @else {
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              }
+            </button>
+          </div>
+
         </div>
+
+        <!-- Mobile Drawer Menu (< md) -->
+        @if (isMobileMenuOpen()) {
+          <div class="md:hidden border-t border-zinc-800/80 bg-zinc-950/98 px-5 py-5 space-y-4 animate-slide-up">
+            <nav class="flex flex-col space-y-2.5 text-sm font-medium text-zinc-300">
+              <a
+                href="#servicios"
+                (click)="isMobileMenuOpen.set(false)"
+                class="p-2.5 rounded-xl hover:bg-zinc-900 hover:text-amber-400 transition-colors"
+              >
+                ✦ Procedimientos Estéticos
+              </a>
+              <a
+                href="#concepto"
+                (click)="isMobileMenuOpen.set(false)"
+                class="p-2.5 rounded-xl hover:bg-zinc-900 hover:text-amber-400 transition-colors"
+              >
+                ✦ Espacio & Concepto Mantra
+              </a>
+              <a
+                href="#especialistas"
+                (click)="isMobileMenuOpen.set(false)"
+                class="p-2.5 rounded-xl hover:bg-zinc-900 hover:text-amber-400 transition-colors"
+              >
+                ✦ Equipo Clínico Especialista
+              </a>
+            </nav>
+
+            <div class="pt-3 border-t border-zinc-800/80 flex flex-col gap-2.5">
+              <button
+                type="button"
+                (click)="isMobileMenuOpen.set(false); openBookingModal()"
+                class="w-full rounded-full bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-bold py-3 text-center transition-colors cursor-pointer"
+              >
+                Agendar Cita Online
+              </button>
+              <a
+                routerLink="/login"
+                (click)="isMobileMenuOpen.set(false)"
+                class="w-full rounded-full border border-zinc-800 text-zinc-400 hover:text-white text-xs font-medium py-2.5 text-center transition-colors"
+              >
+                Portal Staff Clínico →
+              </a>
+            </div>
+          </div>
+        }
       </header>
 
       <!-- ═════════════════════════════════════════════════════════ -->
       <!-- HERO SOFISTICADO: FOTOGRAFÍA HD Y HALO MANTRA             -->
       <!-- ═════════════════════════════════════════════════════════ -->
-      <section class="relative py-14 sm:py-20 lg:py-24 px-6 sm:px-10 lg:px-16 max-w-[1500px] mx-auto w-full overflow-hidden">
+      <section class="relative py-10 sm:py-20 lg:py-24 px-4 sm:px-10 lg:px-16 max-w-[1500px] mx-auto w-full overflow-hidden">
         
         <!-- Ambient Warm Glow Background -->
         <div class="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div class="absolute bottom-10 left-10 w-80 h-80 bg-amber-600/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
           
           <!-- Text Column (Minimalist & High-Impact) -->
-          <div class="lg:col-span-6 space-y-6" data-aos="fade-up" data-aos-duration="800">
+          <div class="lg:col-span-6 space-y-5 sm:space-y-6" data-aos="fade-up" data-aos-duration="800">
             
-            <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
               <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
               <span>Sede Exclusiva · Mantra Group</span>
             </div>
 
-            <div class="space-y-3">
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.06]">
+            <div class="space-y-2.5 sm:space-y-3">
+              <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1] sm:leading-[1.06]">
                 Centro Estético <br />
-                <span class="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+                <span class="text-amber-400">
                   Corporal y Facial.
                 </span>
               </h1>
-              <p class="text-base sm:text-lg text-zinc-400 font-normal leading-relaxed max-w-xl">
+              <p class="text-sm sm:text-lg text-zinc-400 font-normal leading-relaxed max-w-xl">
                 Armonización de vanguardia, tecnología médica y remodelación corporal en un ambiente concebido para la serenidad y la precisión clínica.
               </p>
             </div>
 
             <!-- Features Highlights (Micro Badges) -->
-            <div class="grid grid-cols-3 gap-3 pt-2">
-              <div class="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
-                <span class="text-amber-400 text-sm font-black block">7</span>
-                <span class="text-[11px] font-semibold text-zinc-400 block mt-0.5">Procedimientos</span>
+            <div class="grid grid-cols-3 gap-2 sm:gap-3 pt-1 sm:pt-2">
+              <div class="p-2.5 sm:p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
+                <span class="text-amber-400 text-xs sm:text-sm font-black block">7</span>
+                <span class="text-[9.5px] sm:text-[11px] font-semibold text-zinc-400 block mt-0.5 leading-tight">Procedimientos</span>
               </div>
-              <div class="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
-                <span class="text-amber-400 text-sm font-black block">100%</span>
-                <span class="text-[11px] font-semibold text-zinc-400 block mt-0.5">Médico Biocompatible</span>
+              <div class="p-2.5 sm:p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
+                <span class="text-amber-400 text-xs sm:text-sm font-black block">100%</span>
+                <span class="text-[9.5px] sm:text-[11px] font-semibold text-zinc-400 block mt-0.5 leading-tight">Biocompatible</span>
               </div>
-              <div class="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
-                <span class="text-amber-400 text-sm font-black block">Lunes - Sáb</span>
-                <span class="text-[11px] font-semibold text-zinc-400 block mt-0.5">8:00am - 4:00pm</span>
+              <div class="p-2.5 sm:p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
+                <span class="text-amber-400 text-xs sm:text-sm font-black block">Lun - Sáb</span>
+                <span class="text-[9.5px] sm:text-[11px] font-semibold text-zinc-400 block mt-0.5 leading-tight">8am - 4pm</span>
               </div>
             </div>
 
@@ -171,31 +246,34 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
       </section>
 
       <!-- ═════════════════════════════════════════════════════════ -->
-      <!-- CARRUSEL CINEMÁTICO DE LOS 7 PROCEDIMIENTOS ESTÉTICOS      -->
+      <!-- CARRUSEL MINIMALISTA DE LOS 7 PROCEDIMIENTOS ESTÉTICOS   -->
       <!-- ═════════════════════════════════════════════════════════ -->
-      <section id="servicios" class="py-14 sm:py-20 px-6 sm:px-10 lg:px-16 max-w-[1500px] mx-auto w-full border-t border-zinc-800/80" data-aos="fade-up">
+      <section id="servicios" class="py-14 sm:py-20 px-4 sm:px-10 lg:px-16 max-w-[1500px] mx-auto w-full border-t border-zinc-900" data-aos="fade-up">
         
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <!-- Header Minimalista y Limpio -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-2 mb-2">
               <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-              <span class="uppercase tracking-widest text-[11px] font-bold text-amber-400">CATÁLOGO EXCLUSIVO</span>
+              <span class="uppercase tracking-[0.22em] text-[10.5px] font-bold text-amber-400">
+                LOS 7 PROCEDIMIENTOS MANTRA
+              </span>
             </div>
             <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
               Procedimientos Estéticos
             </h2>
           </div>
 
-          <!-- Carousel Controls & Slide Index -->
+          <!-- Controles y Contador -->
           <div class="flex items-center gap-4">
-            <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-              0{{ currentSlide() + 1 }} / 0{{ carouselSlides.length }}
+            <span class="text-xs font-mono font-bold tracking-wider text-zinc-400">
+              <strong class="text-amber-400">0{{ currentSlide() + 1 }}</strong> / 0{{ carouselSlides.length }}
             </span>
             <div class="flex items-center gap-2">
               <button
                 type="button"
                 (click)="prevSlide()"
-                class="w-11 h-11 rounded-full border border-zinc-800 hover:border-amber-400/60 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+                class="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-zinc-800 hover:border-amber-400/60 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-all flex items-center justify-center cursor-pointer active:scale-95"
                 title="Anterior"
               >
                 ←
@@ -203,7 +281,7 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
               <button
                 type="button"
                 (click)="nextSlide()"
-                class="w-11 h-11 rounded-full border border-zinc-800 hover:border-amber-400/60 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+                class="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-zinc-800 hover:border-amber-400/60 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-all flex items-center justify-center cursor-pointer active:scale-95"
                 title="Siguiente"
               >
                 →
@@ -212,46 +290,59 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
           </div>
         </div>
 
-        <!-- Carousel Slide Showcase (Expansive & High-Definition) -->
-        <div class="relative w-full h-[500px] sm:h-[580px] lg:h-[660px] rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl group">
+        <!-- Gran Carrusel de Imagen Expansiva (Cinemático, Minimalista, Sin Precio) -->
+        <div class="relative w-full h-[520px] sm:h-[620px] lg:h-[720px] rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800/80 shadow-2xl group">
           @for (slide of carouselSlides; track slide.id; let idx = $index) {
             <div
               class="absolute inset-0 transition-opacity duration-700 ease-in-out"
               [ngClass]="idx === currentSlide() ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'"
             >
-              <!-- HD Service Photo -->
+              <!-- Imagen Grande en Alta Definición -->
               <img
                 [src]="slide.image"
                 [alt]="slide.title"
                 class="w-full h-full object-cover object-center group-hover:scale-[1.015] transition-transform duration-700"
               />
 
-              <!-- Luxury Cinematic Gradient -->
-              <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent"></div>
-              <div class="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-transparent to-transparent"></div>
+              <!-- Degradados Cinemáticos Suaves para Legibilidad -->
+              <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/35 to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-zinc-950/70 via-transparent to-transparent"></div>
 
-              <!-- Top Floating Category & Duration Badge -->
-              <div class="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2">
-                <span class="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-zinc-950/85 backdrop-blur-md text-amber-300 border border-amber-400/30 shadow-md">
-                  {{ slide.category }}
+              <!-- Badge Superior Minimalista: Número y Protocolo -->
+              <div class="absolute top-4 left-4 sm:top-8 sm:left-8 flex items-center gap-2">
+                <span class="px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-amber-300 border border-amber-400/30">
+                  0{{ idx + 1 }} · {{ slide.category }}
                 </span>
-                <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-black/60 backdrop-blur-md text-zinc-300 border border-white/10">
+                <span class="px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-semibold bg-black/50 backdrop-blur-md text-zinc-300 border border-white/10">
                   {{ slide.duration }}
                 </span>
               </div>
 
-              <!-- Slide Content Bottom-Left -->
-              <div class="absolute bottom-6 left-6 right-6 sm:bottom-10 sm:left-10 sm:right-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-                <div class="max-w-2xl space-y-2.5">
-                  <div class="flex items-center gap-2 text-amber-400 text-xs font-bold tracking-widest uppercase">
-                    <span>Protocolo Mantra</span>
+              <!-- Indicadores de Puntos en la Esquina Superior Derecha -->
+              <div class="absolute top-5 right-5 sm:top-8 sm:right-8 z-20 flex items-center gap-1.5">
+                @for (s of carouselSlides; track s.id; let dotIdx = $index) {
+                  <button
+                    type="button"
+                    (click)="setSlide(dotIdx)"
+                    class="h-1.5 rounded-full transition-all cursor-pointer"
+                    [ngClass]="dotIdx === currentSlide() ? 'w-7 sm:w-9 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/75'"
+                    [title]="s.title"
+                  ></button>
+                }
+              </div>
+
+              <!-- Contenido Inferior: Título Limpio, Tagline y Botón Agendar (Sin Precio) -->
+              <div class="absolute bottom-6 left-5 right-5 sm:bottom-12 sm:left-12 sm:right-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                <div class="max-w-2xl space-y-2 sm:space-y-3">
+                  <div class="flex items-center gap-2 text-amber-400 text-[10.5px] sm:text-xs font-bold tracking-widest uppercase">
+                    <span>Protocolo Clínico Exclusivo</span>
                     <span>·</span>
-                    <span>Valoración Médica</span>
+                    <span>Mantra Group</span>
                   </div>
                   <h3 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
                     {{ slide.title }}
                   </h3>
-                  <p class="text-zinc-300 text-xs sm:text-sm font-normal max-w-lg leading-relaxed">
+                  <p class="text-zinc-300 text-xs sm:text-base font-normal max-w-xl leading-relaxed">
                     {{ slide.tagline }}
                   </p>
                 </div>
@@ -260,46 +351,34 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                   <button
                     type="button"
                     (click)="openBookingWithServiceId(slide.id)"
-                    class="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs sm:text-sm font-semibold px-6 py-3 transition-colors cursor-pointer flex items-center gap-2 active:scale-[0.98]"
+                    class="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs sm:text-sm font-semibold px-6 sm:px-8 py-3 sm:py-3.5 transition-all cursor-pointer flex items-center gap-2.5 active:scale-[0.98] shadow-lg"
                   >
-                    <span>Agendar {{ slide.title }}</span>
+                    <span>Agendar Cita</span>
                     <span>→</span>
                   </button>
                 </div>
               </div>
             </div>
           }
-
-          <!-- Indicator Dots Inside Slide -->
-          <div class="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center gap-2">
-            @for (slide of carouselSlides; track slide.id; let idx = $index) {
-              <button
-                type="button"
-                (click)="setSlide(idx)"
-                class="h-2 rounded-full transition-all cursor-pointer"
-                [ngClass]="idx === currentSlide() ? 'w-8 bg-amber-400' : 'w-2 bg-white/35 hover:bg-white/70'"
-                [title]="slide.title"
-              ></button>
-            }
-          </div>
         </div>
 
-        <!-- 7 Procedures Quick Access Tabs Row -->
-        <div class="mt-8 pt-8 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4">
-          <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Los 7 Procedimientos:
-          </span>
-          <div class="flex flex-wrap gap-2">
-            @for (service of services(); track service.id; let i = $index) {
-              <button
-                type="button"
-                (click)="setSlide(i); openBookingWithService(service)"
-                class="px-4 py-2 rounded-full text-xs font-bold bg-zinc-900 hover:bg-amber-500 hover:text-zinc-950 text-zinc-300 border border-zinc-800 hover:border-amber-400 transition-all cursor-pointer shadow-xs"
-              >
-                {{ service.name }}
-              </button>
-            }
-          </div>
+        <!-- Selector Minimalista de los 7 Procedimientos (Píldoras de Navegación del Carrusel) -->
+        <div class="mt-6 sm:mt-8 flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+          @for (s of carouselSlides; track s.id; let i = $index) {
+            <button
+              type="button"
+              (click)="setSlide(i)"
+              class="flex-shrink-0 px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full text-xs transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap border"
+              [ngClass]="i === currentSlide()
+                ? 'bg-amber-400 text-zinc-950 border-amber-400 font-bold shadow-sm'
+                : 'bg-zinc-900/60 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 border-zinc-800 hover:border-zinc-700 font-medium'"
+            >
+              <span class="font-mono text-[10.5px]" [ngClass]="i === currentSlide() ? 'text-zinc-950 font-black' : 'text-zinc-500'">
+                0{{ i + 1 }}
+              </span>
+              <span>{{ s.shortTitle }}</span>
+            </button>
+          }
         </div>
 
       </section>
@@ -483,12 +562,14 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
       <!-- ═════════════════════════════════════════════════════════ -->
       <!-- MODAL DE AGENDAMIENTO EN 5 PASOS (LOS 7 PROCEDIMIENTOS)   -->
       <!-- ═════════════════════════════════════════════════════════ -->
+      <!-- MODAL DE AGENDAMIENTO EN 5 PASOS (LOS 7 PROCEDIMIENTOS)   -->
+      <!-- ═════════════════════════════════════════════════════════ -->
       @if (showBookingModal()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div class="w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[92vh] overflow-y-auto p-6 sm:p-8 lg:p-10 bg-zinc-900 rounded-3xl shadow-2xl space-y-6 sm:space-y-7 animate-slide-up border border-zinc-800 text-zinc-100">
+        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div class="w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[94vh] sm:max-h-[92vh] overflow-y-auto p-4 sm:p-8 lg:p-10 bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-2xl space-y-5 sm:space-y-7 animate-slide-up border border-zinc-800 text-zinc-100">
             
             <!-- Modal Header with Progress Step indicator -->
-            <div class="flex items-start justify-between border-b border-zinc-800 pb-4">
+            <div class="flex items-start justify-between border-b border-zinc-800 pb-3 sm:pb-4">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
                   <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
@@ -496,7 +577,7 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                   </span>
                   <span class="text-xs text-zinc-400">Reserva de Cita · Mantra Group</span>
                 </div>
-                <h3 class="text-lg sm:text-2xl font-black text-white tracking-tight">
+                <h3 class="text-base sm:text-2xl font-black text-white tracking-tight">
                   {{ getStepTitle(currentStep()) }}
                 </h3>
               </div>
@@ -504,14 +585,14 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
               <button
                 type="button"
                 (click)="closeBookingModal()"
-                class="w-9 h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors text-sm"
+                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors text-sm"
               >
                 ✕
               </button>
             </div>
 
             <!-- Steps Progress Bar -->
-            <div class="grid grid-cols-5 gap-1.5 pb-2">
+            <div class="grid grid-cols-5 gap-1.5 pb-1 sm:pb-2">
               @for (step of [1, 2, 3, 4, 5]; track step) {
                 <div
                   class="h-1.5 rounded-full transition-all duration-300"
@@ -522,36 +603,36 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
 
             <!-- ─── PASO 1: SELECCIÓN DE PROCEDIMIENTO & ESPECIALISTA ─── -->
             @if (currentStep() === 1) {
-              <div class="space-y-6 sm:space-y-7 animate-fade-in">
+              <div class="space-y-5 sm:space-y-7 animate-fade-in">
                 <div>
-                  <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
                       <label class="text-xs font-bold uppercase tracking-wider text-amber-400 block">1. Selecciona tu Tratamiento</label>
                       <p class="text-xs text-zinc-400 mt-0.5">Elige uno de los 7 procedimientos estéticos de Mantra Group</p>
                     </div>
-                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                      7 Tratamientos
+                    <span class="text-xs font-semibold px-2.5 sm:px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      7 Opciones
                     </span>
                   </div>
 
                   <!-- 7 Tratamientos en Grilla Adaptativa -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
                     @for (s of bookingServices; track s.id) {
                       <button
                         type="button"
                         (click)="bookingForm.serviceId = s.id"
-                        class="p-4 sm:p-5 rounded-2xl text-left border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 group relative overflow-hidden"
-                        [ngClass]="bookingForm.serviceId === s.id ? 'bg-zinc-950 text-white border-amber-400 shadow-lg ring-2 ring-amber-400/30 scale-[1.01]' : 'bg-zinc-900/90 hover:bg-zinc-800/80 border-zinc-800 text-zinc-200'"
+                        class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl text-left border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-2.5 sm:space-y-3 group relative overflow-hidden"
+                        [ngClass]="bookingForm.serviceId === s.id ? 'bg-zinc-950 text-white border-amber-400 shadow-lg ring-1 sm:ring-2 ring-amber-400/30' : 'bg-zinc-900/90 hover:bg-zinc-800/80 border-zinc-800 text-zinc-200'"
                       >
                         <!-- Top Badges & Selection Indicator -->
                         <div class="flex items-center justify-between gap-2 w-full">
-                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                          <span class="px-2 py-0.5 rounded-full text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider"
                                 [ngClass]="bookingForm.serviceId === s.id ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-800 text-zinc-300'">
                             {{ s.categoryLabel || s.category }}
                           </span>
                           
                           <div class="flex items-center gap-2">
-                            <span class="text-xs text-zinc-400 font-medium">
+                            <span class="text-[11px] sm:text-xs text-zinc-400 font-medium">
                               {{ s.durationMinutes }} min
                             </span>
 
@@ -571,12 +652,12 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                           <h4 class="text-sm sm:text-base font-bold leading-snug tracking-tight text-white">
                             {{ s.name }}
                           </h4>
-                          <p class="text-xs leading-relaxed text-zinc-400 line-clamp-2">
+                          <p class="text-[11px] sm:text-xs leading-relaxed text-zinc-400 line-clamp-2">
                             {{ s.description }}
                           </p>
                         </div>
 
-                        <div class="pt-2 flex items-center justify-between text-[11px] border-t border-zinc-800/80 text-zinc-400">
+                        <div class="pt-2 flex items-center justify-between text-[10.5px] sm:text-[11px] border-t border-zinc-800/80 text-zinc-400">
                           <span>Desde {{ s.startingPriceCop | currencyCop }}</span>
                           <span class="text-amber-400 font-semibold">Seleccionar</span>
                         </div>
@@ -587,27 +668,27 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
 
                 <!-- Sub-sección Especialista -->
                 <div>
-                  <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center justify-between mb-2.5 sm:mb-3">
                     <div>
                       <label class="text-xs font-bold uppercase tracking-wider text-amber-400 block">2. Selecciona el Especialista</label>
                       <p class="text-xs text-zinc-400 mt-0.5">Elige profesional de preferencia o primer turno disponible</p>
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
                     <button
                       type="button"
                       (click)="bookingForm.specialistId = 'any'"
-                      class="p-4 rounded-2xl text-left border transition-all cursor-pointer flex items-center gap-3.5 group"
+                      class="p-3.5 rounded-2xl text-left border transition-all cursor-pointer flex items-center gap-3 group"
                       [ngClass]="bookingForm.specialistId === 'any' ? 'bg-zinc-950 text-white border-amber-400 ring-1 ring-amber-400/30' : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-200'"
                     >
-                      <div class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-base transition-colors"
+                      <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-colors"
                            [ngClass]="bookingForm.specialistId === 'any' ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-800 text-zinc-300'">
                         ✦
                       </div>
                       <div class="min-w-0 flex-1">
                         <p class="text-xs sm:text-sm font-bold truncate">Cualquiera</p>
-                        <p class="text-[11px] text-zinc-400 truncate mt-0.5">
+                        <p class="text-[10.5px] text-zinc-400 truncate mt-0.5">
                           Primer turno disponible
                         </p>
                       </div>
@@ -617,17 +698,17 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                       <button
                         type="button"
                         (click)="bookingForm.specialistId = doc.id"
-                        class="p-4 rounded-2xl text-left border transition-all cursor-pointer flex items-center gap-3.5 group"
+                        class="p-3.5 rounded-2xl text-left border transition-all cursor-pointer flex items-center gap-3 group"
                         [ngClass]="bookingForm.specialistId === doc.id ? 'bg-zinc-950 text-white border-amber-400 ring-1 ring-amber-400/30' : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-200'"
                       >
                         <img
                           [src]="doc.photoUrl"
                           [alt]="doc.name"
-                          class="w-11 h-11 rounded-xl object-cover border border-zinc-700"
+                          class="w-10 h-10 rounded-xl object-cover border border-zinc-700"
                         />
                         <div class="min-w-0 flex-1">
                           <p class="text-xs sm:text-sm font-bold truncate">{{ doc.name }}</p>
-                          <p class="text-[11px] text-zinc-400 truncate mt-0.5">
+                          <p class="text-[10.5px] text-zinc-400 truncate mt-0.5">
                             {{ doc.role }}
                           </p>
                         </div>
@@ -636,12 +717,12 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                   </div>
                 </div>
 
-                <div class="pt-5 flex justify-end border-t border-zinc-800">
+                <div class="pt-4 sm:pt-5 flex justify-end border-t border-zinc-800">
                   <button
                     type="button"
                     (click)="nextStep()"
                     [disabled]="!bookingForm.serviceId"
-                    class="rounded-full bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs sm:text-sm font-semibold px-7 py-3 transition-colors cursor-pointer disabled:opacity-40 flex items-center gap-2"
+                    class="w-full sm:w-auto rounded-full bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs sm:text-sm font-semibold px-7 py-3 transition-colors cursor-pointer disabled:opacity-40 flex items-center justify-center gap-2"
                   >
                     <span>Continuar al Calendario</span>
                     <span>→</span>
@@ -652,18 +733,18 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
 
             <!-- ─── PASO 2: SELECCIÓN DE DÍA ─── -->
             @if (currentStep() === 2) {
-              <div class="space-y-5 animate-fade-in">
+              <div class="space-y-4 sm:space-y-5 animate-fade-in">
                 <div class="flex items-center justify-between px-1">
                   <div>
-                    <span class="text-sm font-black text-white">Septiembre 2026</span>
-                    <p class="text-xs text-zinc-400 mt-0.5">Lunes a Sábado de 8:00 a.m. a 4:00 p.m.</p>
+                    <span class="text-xs sm:text-sm font-black text-white">Septiembre 2026</span>
+                    <p class="text-[11px] sm:text-xs text-zinc-400 mt-0.5">Lunes a Sábado de 8:00 a.m. a 4:00 p.m.</p>
                   </div>
-                  <span class="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+                  <span class="text-[10.5px] sm:text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 sm:px-3 py-1 rounded-full">
                     Sede Mantra Medellín
                   </span>
                 </div>
 
-                <div class="grid grid-cols-7 gap-2 text-center text-xs">
+                <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[11px] sm:text-xs">
                   <span class="font-bold text-zinc-500 py-1">Lun</span>
                   <span class="font-bold text-zinc-500 py-1">Mar</span>
                   <span class="font-bold text-zinc-500 py-1">Mié</span>
@@ -677,15 +758,25 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                       type="button"
                       (click)="day.isSelectable ? selectDate(day.date) : null"
                       [disabled]="!day.isSelectable"
-                      class="h-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer border relative"
-                      [ngClass]="[
-                        !day.isSelectable ? 'opacity-30 border-transparent bg-zinc-900/30 cursor-not-allowed text-zinc-600' : '',
-                        bookingForm.date === day.date ? 'bg-amber-400 text-zinc-950 border-amber-400 font-black shadow-lg scale-105' : 'bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-amber-400/50'
-                      ]"
+                      class="h-11 sm:h-16 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center transition-all border relative"
+                      [ngClass]="{
+                        'bg-zinc-950/40 border-zinc-800/40 cursor-not-allowed select-none': !day.isSelectable,
+                        'bg-amber-400 text-zinc-950 border-amber-400 font-black shadow-lg scale-105 cursor-pointer': day.isSelectable && bookingForm.date === day.date,
+                        'bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-amber-400/50 cursor-pointer': day.isSelectable && bookingForm.date !== day.date
+                      }"
                     >
-                      <span class="text-sm sm:text-base font-bold">{{ day.dayNumber }}</span>
+                      <span 
+                        class="text-xs sm:text-base font-bold"
+                        [ngClass]="{
+                          'text-zinc-500 line-through decoration-zinc-600': !day.isSelectable,
+                          'text-zinc-950 font-black': day.isSelectable && bookingForm.date === day.date,
+                          'text-zinc-200': day.isSelectable && bookingForm.date !== day.date
+                        }"
+                      >
+                        {{ day.dayNumber }}
+                      </span>
                       @if (day.isSelectable) {
-                        <span class="text-[9.5px] mt-0.5 opacity-80">Disp.</span>
+                        <span class="text-[8.5px] sm:text-[9.5px] mt-0.5 opacity-80">Disp.</span>
                       }
                     </button>
                   }
@@ -725,16 +816,37 @@ import { CurrencyCopPipe } from '../../shared/pipes/currency-cop.pipe';
                       type="button"
                       (click)="slot.isAvailable ? bookingForm.timeSlot = slot.time : null"
                       [disabled]="!slot.isAvailable"
-                      class="p-4 rounded-2xl border text-center transition-all cursor-pointer"
-                      [ngClass]="[
-                        !slot.isAvailable ? 'opacity-30 border-transparent bg-zinc-900/30 cursor-not-allowed text-zinc-600' : '',
-                        bookingForm.timeSlot === slot.time ? 'bg-amber-400 text-zinc-950 border-amber-400 font-black shadow-lg scale-105' : 'bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-amber-400/50'
-                      ]"
+                      class="p-4 rounded-2xl border text-center transition-all"
+                      [ngClass]="{
+                        'bg-zinc-950/50 border-zinc-800/80 cursor-not-allowed select-none': !slot.isAvailable,
+                        'bg-amber-400 text-zinc-950 border-amber-400 font-black shadow-lg scale-[1.02] ring-1 ring-amber-400/40 cursor-pointer': slot.isAvailable && bookingForm.timeSlot === slot.time,
+                        'bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-amber-400/60 hover:bg-zinc-850 cursor-pointer': slot.isAvailable && bookingForm.timeSlot !== slot.time
+                      }"
                     >
-                      <span class="text-base font-bold block">{{ slot.time }} hrs</span>
-                      <span class="text-[10px] mt-0.5 block opacity-80">
-                        {{ slot.isAvailable ? 'Disponible' : 'Ocupado' }}
+                      <span
+                        class="text-base block font-bold"
+                        [ngClass]="{
+                          'text-zinc-500 line-through decoration-zinc-600': !slot.isAvailable,
+                          'text-zinc-950 font-black': slot.isAvailable && bookingForm.timeSlot === slot.time,
+                          'text-white': slot.isAvailable && bookingForm.timeSlot !== slot.time
+                        }"
+                      >
+                        {{ slot.time }} hrs
                       </span>
+                      
+                      @if (!slot.isAvailable) {
+                        <span class="text-[11px] mt-1 block font-semibold text-zinc-400">
+                          Ocupado
+                        </span>
+                      } @else if (bookingForm.timeSlot === slot.time) {
+                        <span class="text-[11px] mt-1 block font-bold text-zinc-900">
+                          ✓ Seleccionado
+                        </span>
+                      } @else {
+                        <span class="text-[11px] mt-1 block font-medium text-emerald-400/90">
+                          Disponible
+                        </span>
+                      }
                     </button>
                   }
                 </div>
@@ -948,6 +1060,7 @@ export class LandingComponent implements OnInit, AfterViewInit {
   // ─── Los 7 Procedimientos Estéticos Oficiales de Mantra Group ───
   readonly bookingServices: PublicService[] = this.appointmentService.services;
 
+  readonly isMobileMenuOpen = signal(false);
   readonly showBookingModal = signal(false);
   readonly currentStep = signal<number>(1);
   readonly confirmedAppointment = signal<Appointment | null>(null);
@@ -957,6 +1070,7 @@ export class LandingComponent implements OnInit, AfterViewInit {
     {
       id: 'srv-001',
       title: 'Rinomodelación',
+      shortTitle: 'Rinomodelación',
       category: 'Medicina Facial',
       duration: '45 min',
       image: '/images/mantra_rinomodelacion.jpg',
@@ -964,7 +1078,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-002',
-      title: 'Labios',
+      title: 'Labios (Perfilado & Relleno)',
+      shortTitle: 'Labios',
       category: 'Medicina Facial',
       duration: '45 min',
       image: '/images/mantra_labios.jpg',
@@ -972,7 +1087,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-003',
-      title: 'Botox',
+      title: 'Botox (Toxina Botulínica)',
+      shortTitle: 'Botox',
       category: 'Medicina Facial',
       duration: '40 min',
       image: '/images/mantra_botox.jpg',
@@ -980,7 +1096,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-004',
-      title: 'Depilación Láser',
+      title: 'Depilación Láser Médica',
+      shortTitle: 'Depilación Láser',
       category: 'Aparatología Láser',
       duration: '45 min',
       image: '/images/mantra_depilacion.jpg',
@@ -988,7 +1105,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-005',
-      title: 'Limpieza Facial',
+      title: 'Limpieza Facial Profunda + Glow',
+      shortTitle: 'Limpieza Facial',
       category: 'Cosmetología Facial',
       duration: '60 min',
       image: '/images/mantra_limpieza.jpg',
@@ -996,7 +1114,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-006',
-      title: 'Cierre de Costillas',
+      title: 'Cierre de Costillas & Remodelación',
+      shortTitle: 'Cierre de Costillas',
       category: 'Moldeamiento Corporal',
       duration: '60 min',
       image: '/images/mantra_cierre_costillas.jpg',
@@ -1004,7 +1123,8 @@ export class LandingComponent implements OnInit, AfterViewInit {
     },
     {
       id: 'srv-007',
-      title: 'Glúteos',
+      title: 'Glúteos (Armonización & Firmeza)',
+      shortTitle: 'Glúteos',
       category: 'Moldeamiento Corporal',
       duration: '60 min',
       image: '/images/mantra_gluteos.jpg',
@@ -1063,11 +1183,15 @@ export class LandingComponent implements OnInit, AfterViewInit {
     }
   }
 
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+
   bookingForm = {
     serviceId: 'srv-001',
     specialistId: 'any',
     date: '2026-09-12',
-    timeSlot: '10:00',
+    timeSlot: '',
     patientName: '',
     patientPhone: '',
     patientEmail: '',
@@ -1108,6 +1232,7 @@ export class LandingComponent implements OnInit, AfterViewInit {
   openBookingModal(): void {
     this.currentStep.set(1);
     this.confirmedAppointment.set(null);
+    this.bookingForm.timeSlot = '';
     this.showBookingModal.set(true);
   }
 
@@ -1129,12 +1254,7 @@ export class LandingComponent implements OnInit, AfterViewInit {
 
   selectDate(date: string): void {
     this.bookingForm.date = date;
-    const slots = this.appointmentService.getAvailabilitySlots(date, this.bookingForm.specialistId);
-    const isCurrentValid = slots.some(s => s.time === this.bookingForm.timeSlot && s.isAvailable);
-    if (!isCurrentValid) {
-      const firstFree = slots.find(s => s.isAvailable);
-      this.bookingForm.timeSlot = firstFree ? firstFree.time : '';
-    }
+    this.bookingForm.timeSlot = '';
   }
 
   nextStep(): void {

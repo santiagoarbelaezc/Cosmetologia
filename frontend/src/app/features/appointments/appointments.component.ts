@@ -184,82 +184,243 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
       }
 
       <!-- ═════════════════════════════════════════════════════════ -->
-      <!-- 4.3 TAB "CALENDARIO" — VISTA GENERAL DE AGENDA            -->
+      <!-- 4.3 TAB "CALENDARIO" — VISTA MINIMALISTA DE AGENDA        -->
       <!-- ═════════════════════════════════════════════════════════ -->
       @if (activeTab() === 'Calendario') {
         <div class="space-y-4 animate-fade-in">
-          
-          <!-- Filtro por Especialista -->
-          <div class="card p-4 bg-white border border-zinc-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-zinc-700">Filtrar por Especialista:</span>
-              <select [(ngModel)]="calendarSpecialistFilter" class="input-premium text-xs py-1.5 px-3">
+
+          <!-- BARRA DE FILTROS MINIMALISTA -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+            <!-- Filtros: Especialista y Estado -->
+            <div class="flex flex-wrap items-center gap-2.5">
+              <select [(ngModel)]="calendarSpecialistFilter" class="input-premium text-xs py-1.5 px-3 bg-white">
                 <option value="all">Todos los Especialistas</option>
-                <option value="usr-003">Dr. Andrés Castaño (Medicina Estética)</option>
-                <option value="usr-004">Camila Herrera (Cosmetología & Corporal)</option>
+                <option value="usr-003">Dr. Andrés Castaño</option>
+                <option value="usr-004">Camila Herrera</option>
               </select>
+
+              <div class="flex items-center gap-1 p-1 bg-zinc-100 rounded-full text-xs">
+                <button
+                  type="button"
+                  (click)="setCalendarStatusFilter('ALL')"
+                  class="px-3 py-1 rounded-full font-medium transition-all cursor-pointer"
+                  [ngClass]="calendarStatusFilter() === 'ALL' ? 'bg-white text-zinc-900 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-900'"
+                >
+                  Todas ({{ getCalendarTotalCount() }})
+                </button>
+                <button
+                  type="button"
+                  (click)="setCalendarStatusFilter('PENDING')"
+                  class="px-3 py-1 rounded-full font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+                  [ngClass]="calendarStatusFilter() === 'PENDING' ? 'bg-amber-500 text-white shadow-2xs font-bold' : 'text-amber-800 hover:bg-amber-100/50'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="calendarStatusFilter() === 'PENDING' ? 'bg-white' : 'bg-amber-500'"></span>
+                  Pendientes ({{ getCalendarPendingCount() }})
+                </button>
+                <button
+                  type="button"
+                  (click)="setCalendarStatusFilter('CONFIRMED')"
+                  class="px-3 py-1 rounded-full font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+                  [ngClass]="calendarStatusFilter() === 'CONFIRMED' ? 'bg-emerald-600 text-white shadow-2xs font-bold' : 'text-emerald-800 hover:bg-emerald-100/50'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="calendarStatusFilter() === 'CONFIRMED' ? 'bg-white' : 'bg-emerald-500'"></span>
+                  Confirmadas ({{ getCalendarConfirmedCount() }})
+                </button>
+              </div>
             </div>
 
-            <div class="flex items-center gap-4 text-xs font-medium text-zinc-500">
-              <span class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Confirmada
-              </span>
-              <span class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pendiente
-              </span>
-              <span class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-zinc-300"></span> Cancelada
-              </span>
+            <!-- Switcher: Día vs Semana -->
+            <div class="flex items-center p-1 bg-zinc-100 rounded-xl text-xs">
+              <button
+                type="button"
+                (click)="setCalendarViewMode('day')"
+                class="px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer"
+                [ngClass]="calendarViewMode() === 'day' ? 'bg-white text-zinc-950 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-900'"
+              >
+                Por Día
+              </button>
+              <button
+                type="button"
+                (click)="setCalendarViewMode('week')"
+                class="px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer"
+                [ngClass]="calendarViewMode() === 'week' ? 'bg-white text-zinc-950 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-900'"
+              >
+                Semana Completa
+              </button>
             </div>
           </div>
 
-          <!-- Grid Semanal de Citas -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            @for (date of agendaDates; track date) {
-              <div class="card p-4 bg-white border border-zinc-200/80 rounded-2xl space-y-3">
-                <div class="flex items-center justify-between border-b border-zinc-100 pb-2">
-                  <h4 class="text-xs font-bold text-zinc-900">{{ formatDateLabel(date) }}</h4>
-                  <span class="text-[10.5px] font-semibold text-zinc-400">
-                    {{ getAppointmentsForDate(date).length }} citas
-                  </span>
+          <!-- MODO 1: POR DÍA (CON UN SOLO NAVEGADOR HORIZONTAL, NUNCA REPETIDO) -->
+          @if (calendarViewMode() === 'day') {
+            <div class="space-y-4">
+              <!-- SELECTOR DE DÍAS (ÚNICO NAVEGADOR) -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                @for (date of agendaDates; track date) {
+                  <button
+                    type="button"
+                    (click)="selectCalendarDate(date)"
+                    class="flex-1 min-w-[100px] py-2.5 px-3 rounded-2xl border transition-all text-center cursor-pointer"
+                    [ngClass]="selectedCalendarDate() === date 
+                      ? 'bg-zinc-950 border-zinc-950 text-white shadow-sm' 
+                      : 'bg-white border-zinc-200/80 hover:border-zinc-300 text-zinc-700'"
+                  >
+                    <div class="text-[10.5px] uppercase font-bold tracking-wider"
+                         [ngClass]="selectedCalendarDate() === date ? 'text-zinc-400' : 'text-zinc-400'">
+                      {{ getDayOfWeekName(date) }}
+                    </div>
+                    <div class="text-base font-extrabold mt-0.5">
+                      {{ getDayNumber(date) }} <span class="text-[11px] font-normal opacity-70">Sep</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-1.5 mt-1">
+                      @if (getPendingCountForDate(date) > 0) {
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                      }
+                      <span class="text-[10.5px]" [ngClass]="selectedCalendarDate() === date ? 'text-zinc-300' : 'text-zinc-400'">
+                        {{ getAppointmentsForDate(date).length }} citas
+                      </span>
+                    </div>
+                  </button>
+                }
+              </div>
+
+              <!-- AGENDA DEL DÍA SELECCIONADO -->
+              <div class="card p-5 bg-white border border-zinc-200/80 rounded-2xl space-y-4 shadow-xs">
+                <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+                  <div>
+                    <h3 class="text-sm sm:text-base font-bold text-zinc-900">
+                      {{ formatFullDateLabel(selectedCalendarDate()) }}
+                    </h3>
+                    <p class="text-xs text-zinc-400 mt-0.5">
+                      {{ getAppointmentsForDate(selectedCalendarDate()).length }} citas · Haz clic en cualquier cita para ver detalles
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      (click)="previousCalendarDate()"
+                      class="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-600 cursor-pointer"
+                      title="Día anterior"
+                    >
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="nextCalendarDate()"
+                      class="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-600 cursor-pointer"
+                      title="Día siguiente"
+                    >
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
-                <div class="space-y-2">
-                  @for (apt of getAppointmentsForDate(date); track apt.id) {
+                <!-- Lista de Citas Minimalistas del Día -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  @for (apt of getAppointmentsForDate(selectedCalendarDate()); track apt.id) {
                     <div
                       (click)="openDetailModal(apt)"
-                      class="p-2.5 rounded-xl border transition-all cursor-pointer text-xs space-y-1"
+                      class="p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 bg-white hover:border-zinc-400 hover:shadow-xs group"
                       [ngClass]="{
-                        'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50': apt.status === 'CONFIRMED',
-                        'bg-amber-50/50 border-amber-200 hover:bg-amber-50': apt.status === 'PENDING',
-                        'bg-zinc-50 border-zinc-200/70 text-zinc-400 opacity-60': apt.status === 'CANCELLED'
+                        'border-amber-200/80 bg-amber-50/20': apt.status === 'PENDING',
+                        'border-zinc-200/80': apt.status === 'CONFIRMED',
+                        'border-zinc-200/60 opacity-60 bg-zinc-50/40': apt.status === 'CANCELLED'
                       }"
                     >
-                      <div class="flex items-center justify-between">
-                        <strong class="font-bold text-zinc-900 truncate">{{ apt.timeSlot }} hrs</strong>
-                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded"
-                              [ngClass]="apt.status === 'CONFIRMED' ? 'text-emerald-700 bg-emerald-100/60' : apt.status === 'PENDING' ? 'text-amber-800 bg-amber-100/60' : 'text-zinc-500 bg-zinc-200/60'">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div class="text-center w-12 flex-shrink-0">
+                          <span class="text-sm font-extrabold text-zinc-900 block leading-tight">{{ apt.timeSlot }}</span>
+                          <span class="text-[10px] text-zinc-400 uppercase font-medium">{{ apt.timeSlot >= '12:00' ? 'PM' : 'AM' }}</span>
+                        </div>
+
+                        <div class="min-w-0">
+                          <h4 class="text-xs sm:text-sm font-bold text-zinc-900 truncate group-hover:text-zinc-950">
+                            {{ apt.patientName }}
+                          </h4>
+                          <p class="text-xs text-zinc-500 truncate mt-0.5">
+                            {{ apt.serviceName }} <span class="text-zinc-300">·</span> {{ apt.specialistName || 'Sin asignar' }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                              [ngClass]="apt.status === 'CONFIRMED' ? 'bg-emerald-100/70 text-emerald-800' : apt.status === 'PENDING' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-zinc-200 text-zinc-600'">
                           {{ apt.status === 'CONFIRMED' ? 'Confirmada' : apt.status === 'PENDING' ? 'Pendiente' : 'Cancelada' }}
                         </span>
+                        <svg class="w-4 h-4 text-zinc-300 group-hover:text-zinc-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
                       </div>
-                      <p class="font-semibold text-zinc-800 truncate">{{ apt.patientName }}</p>
-                      <p class="text-[11px] text-zinc-500 truncate">{{ apt.serviceName }}</p>
-                      <p class="text-[10px] text-zinc-400 pt-0.5 truncate">{{ apt.specialistName || 'Sin asignar' }}</p>
                     </div>
                   }
 
-                  @if (getAppointmentsForDate(date).length === 0) {
-                    <p class="text-center py-6 text-xs text-zinc-400 italic">Sin citas programadas</p>
+                  @if (getAppointmentsForDate(selectedCalendarDate()).length === 0) {
+                    <div class="col-span-full text-center py-10 text-xs text-zinc-400 italic bg-zinc-50/50 rounded-xl border border-dashed border-zinc-200">
+                      Sin citas programadas para esta fecha
+                    </div>
                   }
                 </div>
               </div>
-            }
-          </div>
+            </div>
+          }
+
+          <!-- MODO 2: SEMANA COMPLETA (SIN REPETIR LA BARRA SUPERIOR) -->
+          @if (calendarViewMode() === 'week') {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              @for (date of agendaDates; track date) {
+                <div class="card p-3.5 bg-white border border-zinc-200/80 rounded-2xl space-y-2.5 shadow-2xs">
+                  <div class="flex items-center justify-between border-b border-zinc-100 pb-2">
+                    <div>
+                      <h4 class="text-xs font-bold text-zinc-900">{{ formatDateLabel(date) }}</h4>
+                      <span class="text-[10px] text-zinc-400 font-medium">{{ getDayOfWeekFullName(date) }}</span>
+                    </div>
+                    <span class="text-[10.5px] font-semibold text-zinc-400">
+                      {{ getAppointmentsForDate(date).length }} citas
+                    </span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    @for (apt of getAppointmentsForDate(date); track apt.id) {
+                      <div
+                        (click)="openDetailModal(apt)"
+                        class="p-2.5 rounded-xl border transition-all cursor-pointer text-xs space-y-1 bg-white hover:border-zinc-400 hover:shadow-2xs group"
+                        [ngClass]="{
+                          'border-amber-200/80 bg-amber-50/20': apt.status === 'PENDING',
+                          'border-zinc-200/80': apt.status === 'CONFIRMED',
+                          'border-zinc-200/60 opacity-60 bg-zinc-50/40': apt.status === 'CANCELLED'
+                        }"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span class="font-extrabold text-[11px] text-zinc-900">{{ apt.timeSlot }}</span>
+                          <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded"
+                                [ngClass]="apt.status === 'CONFIRMED' ? 'text-emerald-700 bg-emerald-100/60' : apt.status === 'PENDING' ? 'text-amber-800 bg-amber-100/80' : 'text-zinc-500 bg-zinc-200/60'">
+                            {{ apt.status === 'CONFIRMED' ? '✓' : apt.status === 'PENDING' ? '⏳' : '✕' }}
+                          </span>
+                        </div>
+                        <p class="font-bold text-zinc-800 truncate text-[11.5px]">{{ apt.patientName }}</p>
+                        <p class="text-[10.5px] text-zinc-500 truncate">{{ apt.serviceName }}</p>
+                      </div>
+                    }
+
+                    @if (getAppointmentsForDate(date).length === 0) {
+                      <p class="text-center py-6 text-xs text-zinc-400 italic">Sin citas</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
         </div>
       }
 
       <!-- ═════════════════════════════════════════════════════════ -->
-      <!-- 4.4 TAB "TODAS LAS CITAS" — TABLA HISTÓRICA               -->
+      <!-- 4.4 TAB "TODAS LAS CITAS" — TABLA HISTÓRICA CON PAGINACIÓN -->
       <!-- ═════════════════════════════════════════════════════════ -->
       @if (activeTab() === 'Todas las Citas') {
         <div class="card p-5 bg-white border border-zinc-200/80 rounded-2xl space-y-4 animate-fade-in shadow-xs">
@@ -269,8 +430,9 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
             <div class="relative flex-1 w-full">
               <input
                 type="text"
-                [(ngModel)]="searchQuery"
-                placeholder="Buscar por paciente, teléfono o servicio..."
+                [ngModel]="searchQuery()"
+                (ngModelChange)="onSearchChange($event)"
+                placeholder="Buscar por paciente, teléfono, ID o servicio..."
                 class="input-premium text-xs pl-9"
               />
               <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -278,7 +440,11 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
               </svg>
             </div>
 
-            <select [(ngModel)]="statusFilter" class="input-premium text-xs py-2 px-3 w-full sm:w-44">
+            <select
+              [ngModel]="statusFilter()"
+              (ngModelChange)="onStatusFilterChange($event)"
+              class="input-premium text-xs py-2 px-3 w-full sm:w-44"
+            >
               <option value="ALL">Todos los Estados</option>
               <option value="PENDING">Pendientes</option>
               <option value="CONFIRMED">Confirmadas</option>
@@ -302,7 +468,7 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
                 </tr>
               </thead>
               <tbody class="divide-y divide-zinc-100 font-medium">
-                @for (apt of filteredAppointments(); track apt.id) {
+                @for (apt of paginatedAppointments(); track apt.id) {
                   <tr class="hover:bg-zinc-50/60 transition-colors">
                     <td class="py-3 px-3 font-mono text-zinc-400 font-bold">{{ apt.id }}</td>
                     <td class="py-3 px-3">
@@ -352,9 +518,115 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
                     </td>
                   </tr>
                 }
+
+                @if (filteredAppointments().length === 0) {
+                  <tr>
+                    <td colspan="8" class="text-center py-12 text-zinc-400 italic">
+                      No se encontraron citas que coincidan con los filtros de búsqueda.
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
+
+          <!-- BARRA DE PAGINACIÓN -->
+          @if (filteredAppointments().length > 0) {
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3.5 pt-4 border-t border-zinc-100">
+              <!-- Información de registros y selector de tamaño de página -->
+              <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                <span>
+                  Mostrando <strong class="text-zinc-900 font-semibold">{{ startIndex() }}–{{ endIndex() }}</strong> de <strong class="text-zinc-900 font-semibold">{{ filteredAppointments().length }}</strong> citas
+                </span>
+
+                <div class="flex items-center gap-1.5 pl-2 border-l border-zinc-200">
+                  <span class="text-[11px] text-zinc-400">Filas:</span>
+                  <select
+                    [ngModel]="pageSize()"
+                    (ngModelChange)="onPageSizeChange($event)"
+                    class="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-zinc-400 cursor-pointer transition-colors"
+                  >
+                    @for (opt of pageSizeOptions; track opt) {
+                      <option [value]="opt">{{ opt }} por pág.</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <!-- Controles de navegación de páginas -->
+              <div class="flex items-center gap-1">
+                <!-- Botón Anterior -->
+                <button
+                  type="button"
+                  (click)="prevPage()"
+                  [disabled]="currentPage() === 1"
+                  class="px-2.5 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+                  title="Página anterior"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                  <span class="hidden sm:inline">Anterior</span>
+                </button>
+
+                <!-- Números de Página -->
+                <div class="flex items-center gap-1">
+                  @if (visiblePages()[0] > 1) {
+                    <button
+                      type="button"
+                      (click)="goToPage(1)"
+                      class="w-8 h-8 rounded-xl text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    >
+                      1
+                    </button>
+                    @if (visiblePages()[0] > 2) {
+                      <span class="text-zinc-400 text-xs px-1 select-none">···</span>
+                    }
+                  }
+
+                  @for (p of visiblePages(); track p) {
+                    <button
+                      type="button"
+                      (click)="goToPage(p)"
+                      class="w-8 h-8 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                      [ngClass]="currentPage() === p 
+                        ? 'bg-zinc-950 text-white shadow-2xs font-bold' 
+                        : 'text-zinc-600 hover:bg-zinc-100'"
+                    >
+                      {{ p }}
+                    </button>
+                  }
+
+                  @if (visiblePages()[visiblePages().length - 1] < totalPages()) {
+                    @if (visiblePages()[visiblePages().length - 1] < totalPages() - 1) {
+                      <span class="text-zinc-400 text-xs px-1 select-none">···</span>
+                    }
+                    <button
+                      type="button"
+                      (click)="goToPage(totalPages())"
+                      class="w-8 h-8 rounded-xl text-xs font-semibold text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    >
+                      {{ totalPages() }}
+                    </button>
+                  }
+                </div>
+
+                <!-- Botón Siguiente -->
+                <button
+                  type="button"
+                  (click)="nextPage()"
+                  [disabled]="currentPage() === totalPages()"
+                  class="px-2.5 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+                  title="Página siguiente"
+                >
+                  <span class="hidden sm:inline">Siguiente</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -413,85 +685,100 @@ import { PillTabsComponent } from '../../shared/components/pill-tabs/pill-tabs.c
       <!-- MODAL DETALLE DE CITA                                     -->
       <!-- ═════════════════════════════════════════════════════════ -->
       @if (selectedAppointment()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div class="card w-full max-w-lg p-6 bg-white rounded-3xl shadow-2xl space-y-4 animate-slide-up border border-zinc-200">
-            <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+        <div
+          (click)="selectedAppointment.set(null)"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in"
+        >
+          <div
+            (click)="$event.stopPropagation()"
+            class="card w-full max-w-md p-6 bg-white rounded-3xl shadow-2xl space-y-4 animate-slide-up border border-zinc-200"
+          >
+            <!-- Header Modal -->
+            <div class="flex items-start justify-between border-b border-zinc-100 pb-3">
               <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Detalle de Cita</span>
-                <h3 class="text-base font-bold text-zinc-900">{{ selectedAppointment()?.id }}</h3>
+                <span class="text-[10.5px] font-bold uppercase tracking-wider text-zinc-400">Detalle de Cita · {{ selectedAppointment()?.id }}</span>
+                <h3 class="text-base sm:text-lg font-extrabold text-zinc-900 mt-0.5">{{ selectedAppointment()?.patientName }}</h3>
               </div>
               <button
+                type="button"
                 (click)="selectedAppointment.set(null)"
-                class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-900 flex items-center justify-center cursor-pointer text-xs"
+                class="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900 flex items-center justify-center cursor-pointer text-xs transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/70 space-y-2 text-xs">
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Paciente:</span>
-                <strong class="text-zinc-900">{{ selectedAppointment()?.patientName }}</strong>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Teléfono:</span>
-                <strong class="text-zinc-900">{{ selectedAppointment()?.patientPhone }}</strong>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Servicio:</span>
-                <strong class="text-zinc-900">{{ selectedAppointment()?.serviceName }}</strong>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Especialista:</span>
-                <span class="text-zinc-800 font-semibold">{{ selectedAppointment()?.specialistName || 'Sin asignar' }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Fecha y Hora:</span>
-                <strong class="text-zinc-900">{{ selectedAppointment()?.date }} · {{ selectedAppointment()?.timeSlot }} hrs</strong>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-zinc-500">Estado actual:</span>
-                <span class="font-bold uppercase text-[10px] px-2 py-0.5 rounded-full"
-                      [ngClass]="selectedAppointment()?.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' : selectedAppointment()?.status === 'PENDING' ? 'bg-amber-100 text-amber-800' : 'bg-zinc-200 text-zinc-700'">
-                  {{ selectedAppointment()?.status }}
+            <!-- Información Clínica -->
+            <div class="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/70 space-y-2.5 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-zinc-400 font-medium">Estado:</span>
+                <span class="font-bold text-[10.5px] px-2.5 py-0.5 rounded-full"
+                      [ngClass]="selectedAppointment()?.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' : selectedAppointment()?.status === 'PENDING' ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-zinc-200 text-zinc-700'">
+                  {{ selectedAppointment()?.status === 'CONFIRMED' ? '✓ Confirmada' : selectedAppointment()?.status === 'PENDING' ? '⏳ Pendiente de Confirmar' : '✕ Cancelada' }}
                 </span>
               </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400 font-medium">Procedimiento:</span>
+                <strong class="text-zinc-900 text-right">{{ selectedAppointment()?.serviceName }}</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400 font-medium">Especialista:</span>
+                <span class="text-zinc-800 font-semibold text-right">{{ selectedAppointment()?.specialistName || 'Por Asignar' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-zinc-400 font-medium">Fecha y Hora:</span>
+                <strong class="text-zinc-900">{{ selectedAppointment()?.date }} · {{ selectedAppointment()?.timeSlot }} hrs</strong>
+              </div>
+              <div class="flex justify-between pt-1 border-t border-zinc-200/60">
+                <span class="text-zinc-400 font-medium">Teléfono:</span>
+                <strong class="text-zinc-900">{{ selectedAppointment()?.patientPhone }}</strong>
+              </div>
+              @if (selectedAppointment()?.patientEmail) {
+                <div class="flex justify-between">
+                  <span class="text-zinc-400 font-medium">Email:</span>
+                  <span class="text-zinc-700 truncate max-w-[200px]">{{ selectedAppointment()?.patientEmail }}</span>
+                </div>
+              }
             </div>
 
             @if (selectedAppointment()?.notes) {
-              <div class="text-xs p-3 bg-zinc-50 rounded-xl border border-zinc-100 text-zinc-600">
-                <span class="font-bold text-zinc-700 block mb-0.5">Notas del cliente:</span>
+              <div class="text-xs p-3 bg-amber-50/40 rounded-xl border border-amber-100 text-zinc-600">
+                <span class="font-bold text-amber-900 block mb-0.5 text-[11px]">Notas del cliente:</span>
                 "{{ selectedAppointment()?.notes }}"
               </div>
             }
 
-            <div class="flex items-center justify-between pt-3 border-t border-zinc-100 gap-2">
-              <button
-                (click)="openWhatsApp(selectedAppointment()!)"
-                class="rounded-full border border-zinc-200 hover:bg-zinc-50 text-zinc-900 text-xs font-semibold py-2 px-3.5 transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <span>WhatsApp</span>
-              </button>
-
+            <!-- Botones de Acción del Modal -->
+            <div class="flex flex-col gap-2 pt-2 border-t border-zinc-100">
               <div class="flex items-center gap-2">
                 @if (selectedAppointment()?.status === 'PENDING') {
                   <button
+                    type="button"
                     (click)="confirmAppointment(selectedAppointment()!.id)"
-                    class="rounded-full bg-zinc-950 text-white text-xs font-bold py-2 px-4 hover:bg-zinc-800 cursor-pointer shadow-xs"
+                    class="flex-1 rounded-full bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold py-2.5 px-4 transition-all cursor-pointer shadow-xs text-center"
                   >
-                    Confirmar Cita
+                    ✓ Confirmar Cita
                   </button>
                 }
 
-                @if (selectedAppointment()?.status !== 'CANCELLED') {
-                  <button
-                    (click)="cancelAppointment(selectedAppointment()!.id)"
-                    class="rounded-full border border-zinc-200 text-zinc-600 text-xs font-semibold py-2 px-3 hover:bg-zinc-50 cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                }
+                <button
+                  type="button"
+                  (click)="openWhatsApp(selectedAppointment()!)"
+                  class="flex-1 rounded-full border border-zinc-200 hover:bg-zinc-50 text-zinc-900 text-xs font-semibold py-2.5 px-4 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>💬 Contactar WhatsApp</span>
+                </button>
               </div>
+
+              @if (selectedAppointment()?.status !== 'CANCELLED') {
+                <button
+                  type="button"
+                  (click)="cancelAppointment(selectedAppointment()!.id)"
+                  class="text-[11.5px] font-semibold text-zinc-400 hover:text-rose-600 transition-colors py-1 cursor-pointer text-center"
+                >
+                  Cancelar cita
+                </button>
+              }
             </div>
           </div>
         </div>
@@ -516,10 +803,20 @@ export class AppointmentsComponent {
 
   readonly selectedAppointment = signal<Appointment | null>(null);
 
-  // Filters
-  searchQuery = '';
-  statusFilter = 'ALL';
+  // Filters & Pagination for "Todas las Citas"
+  readonly searchQuery = signal<string>('');
+  readonly statusFilter = signal<string>('ALL');
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(10);
+  readonly pageSizeOptions = [5, 10, 15, 20, 50];
+
   calendarSpecialistFilter = 'all';
+
+  // Calendar state & filters
+  readonly calendarViewMode = signal<'day' | 'week'>('day');
+  readonly selectedCalendarDate = signal<string>('2026-09-12');
+  readonly calendarStatusFilter = signal<string>('ALL');
+  readonly dailyTimeSlots = this.appointmentService.dailyTimeSlots;
 
   // Sample Agenda dates for the calendar view
   readonly agendaDates = [
@@ -536,32 +833,204 @@ export class AppointmentsComponent {
   readonly filteredAppointments = computed(() => {
     let list = this.appointments();
 
-    if (this.statusFilter !== 'ALL') {
-      list = list.filter(a => a.status === this.statusFilter);
+    if (this.statusFilter() !== 'ALL') {
+      list = list.filter(a => a.status === this.statusFilter());
     }
 
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase().trim();
+    const q = this.searchQuery().toLowerCase().trim();
+    if (q) {
       list = list.filter(
         a =>
           a.patientName.toLowerCase().includes(q) ||
           a.patientPhone.includes(q) ||
           a.serviceName.toLowerCase().includes(q) ||
-          (a.specialistName && a.specialistName.toLowerCase().includes(q))
+          (a.specialistName && a.specialistName.toLowerCase().includes(q)) ||
+          a.id.toLowerCase().includes(q)
       );
     }
 
     return list;
   });
 
-  getAppointmentsForDate(date: string): Appointment[] {
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filteredAppointments().length / this.pageSize())));
+
+  readonly paginatedAppointments = computed(() => {
+    const page = Math.min(this.currentPage(), this.totalPages());
+    const size = this.pageSize();
+    const start = (page - 1) * size;
+    return this.filteredAppointments().slice(start, start + size);
+  });
+
+  readonly startIndex = computed(() => {
+    if (this.filteredAppointments().length === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly endIndex = computed(() => {
+    return Math.min(this.currentPage() * this.pageSize(), this.filteredAppointments().length);
+  });
+
+  readonly visiblePages = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  });
+
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(1);
+  }
+
+  onStatusFilterChange(value: string): void {
+    this.statusFilter.set(value);
+    this.currentPage.set(1);
+  }
+
+  onPageSizeChange(value: any): void {
+    this.pageSize.set(Number(value));
+    this.currentPage.set(1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  setCalendarViewMode(mode: 'day' | 'week'): void {
+    this.calendarViewMode.set(mode);
+  }
+
+  selectCalendarDate(date: string): void {
+    this.selectedCalendarDate.set(date);
+  }
+
+  setCalendarStatusFilter(status: string): void {
+    this.calendarStatusFilter.set(status);
+  }
+
+  getCalendarTotalCount(): number {
     return this.appointments().filter(a => {
-      if (a.date !== date) return false;
       if (this.calendarSpecialistFilter !== 'all' && a.specialistId !== this.calendarSpecialistFilter) {
         return false;
       }
       return true;
-    });
+    }).length;
+  }
+
+  getCalendarPendingCount(): number {
+    return this.appointments().filter(a => {
+      if (a.status !== 'PENDING') return false;
+      if (this.calendarSpecialistFilter !== 'all' && a.specialistId !== this.calendarSpecialistFilter) {
+        return false;
+      }
+      return true;
+    }).length;
+  }
+
+  getCalendarConfirmedCount(): number {
+    return this.appointments().filter(a => {
+      if (a.status !== 'CONFIRMED') return false;
+      if (this.calendarSpecialistFilter !== 'all' && a.specialistId !== this.calendarSpecialistFilter) {
+        return false;
+      }
+      return true;
+    }).length;
+  }
+
+  getDayOfWeekName(date: string): string {
+    const d = new Date(date + 'T12:00:00');
+    const dayIndex = d.getDay();
+    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    return days[dayIndex] || '';
+  }
+
+  getDayOfWeekFullName(date: string): string {
+    const d = new Date(date + 'T12:00:00');
+    const dayIndex = d.getDay();
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return days[dayIndex] || '';
+  }
+
+  getDayNumber(date: string): string {
+    return date.split('-')[2];
+  }
+
+  getMonthName(date: string): string {
+    const m = date.split('-')[1];
+    return m === '09' ? 'Sep' : m;
+  }
+
+  formatFullDateLabel(date: string): string {
+    const parts = date.split('-');
+    const dayOfWeek = this.getDayOfWeekFullName(date);
+    const day = parts[2];
+    const year = parts[0];
+    return `${dayOfWeek}, ${day} de Septiembre de ${year}`;
+  }
+
+  getPendingCountForDate(date: string): number {
+    return this.appointments().filter(a => a.date === date && a.status === 'PENDING').length;
+  }
+
+  getConfirmedCountForDate(date: string): number {
+    return this.appointments().filter(a => a.date === date && a.status === 'CONFIRMED').length;
+  }
+
+  getOccupancyPercentForDate(date: string): number {
+    const count = this.appointments().filter(a => a.date === date && a.status !== 'CANCELLED').length;
+    const maxSlots = 9;
+    return Math.min(100, Math.round((count / maxSlots) * 100));
+  }
+
+  getAppointmentsForSlot(date: string, time: string): Appointment[] {
+    return this.getAppointmentsForDate(date).filter(a => a.timeSlot === time);
+  }
+
+  previousCalendarDate(): void {
+    const idx = this.agendaDates.indexOf(this.selectedCalendarDate());
+    if (idx > 0) {
+      this.selectedCalendarDate.set(this.agendaDates[idx - 1]);
+    }
+  }
+
+  nextCalendarDate(): void {
+    const idx = this.agendaDates.indexOf(this.selectedCalendarDate());
+    if (idx < this.agendaDates.length - 1) {
+      this.selectedCalendarDate.set(this.agendaDates[idx + 1]);
+    }
+  }
+
+  getAppointmentsForDate(date: string): Appointment[] {
+    return this.appointments()
+      .filter(a => {
+        if (a.date !== date) return false;
+        if (this.calendarSpecialistFilter !== 'all' && a.specialistId !== this.calendarSpecialistFilter) {
+          return false;
+        }
+        if (this.calendarStatusFilter() !== 'ALL' && a.status !== this.calendarStatusFilter()) {
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
   }
 
   formatDateLabel(date: string): string {
@@ -590,7 +1059,7 @@ export class AppointmentsComponent {
     const cleanPhone = apt.patientPhone.replace(/\D/g, '');
     const appointmentInfo = `${apt.serviceName} el día ${apt.date} a las ${apt.timeSlot} hrs`;
     const message = encodeURIComponent(
-      `Hola ${apt.patientName}, te contactamos de Estética Clinic respecto a tu cita: ${appointmentInfo}. ¿Podrías confirmarnos tu asistencia?`
+      `Hola ${apt.patientName}, te contactamos de Mantra Group respecto a tu cita: ${appointmentInfo}. ¿Podrías confirmarnos tu asistencia?`
     );
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
     this.appointmentService.logWhatsAppContact(apt.id);
@@ -631,7 +1100,7 @@ export class AppointmentsComponent {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Citas_EsteticaClinic_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Citas_Mantra_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
