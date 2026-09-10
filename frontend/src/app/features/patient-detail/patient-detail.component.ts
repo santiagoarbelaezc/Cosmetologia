@@ -1006,6 +1006,9 @@ export class PatientDetailComponent implements OnInit {
     if (treatments.length > 0) {
       this.newEvolutionTreatmentId = treatments[0].id;
     }
+
+    // Gerente/Admin has diagram visible by default; Medico/Cosmetologa has it hidden by default
+    this.showWorkflowDiagram.set(this.permissions.canViewFinancials());
   }
 
   getSpecialistName(specialistId: string): string {
