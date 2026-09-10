@@ -15,6 +15,8 @@ interface NavItem {
 }
 
 import { SidebarService } from '../../../core/services/sidebar.service';
+import { AppointmentService } from '../../../core/services/appointment.service';
+import { ClientService } from '../../../core/services/client.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,26 +32,21 @@ import { SidebarService } from '../../../core/services/sidebar.service';
       <!-- BRAND & CLINIC IDENTITY                                   -->
       <!-- ═════════════════════════════════════════════════════════ -->
       <div class="px-5 py-5 border-b border-zinc-100 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3.5 min-w-0">
-          <!-- Logo Emblem -->
-          <div class="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xs border border-zinc-800">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-            </svg>
-          </div>
-
-          @if (!isCollapsed()) {
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5">
-                <h1 class="text-sm font-extrabold tracking-tight text-zinc-900 truncate">Estética Clinic</h1>
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              </div>
-              <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 truncate">
-                Medicina & Cosmecéutica
-              </p>
+        @if (!isCollapsed()) {
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-sm font-extrabold tracking-tight text-zinc-900 truncate uppercase">Mantra Group</h1>
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             </div>
-          }
-        </div>
+            <p class="text-[9.5px] font-bold uppercase tracking-wider text-amber-700/80 truncate mt-0.5">
+              Centro Estético Corporal & Facial
+            </p>
+          </div>
+        } @else {
+          <div class="w-full flex justify-center py-1">
+            <span class="font-black text-sm text-zinc-900">M</span>
+          </div>
+        }
       </div>
 
       <!-- ═════════════════════════════════════════════════════════ -->
@@ -70,14 +67,26 @@ import { SidebarService } from '../../../core/services/sidebar.service';
               [routerLink]="item.route"
               routerLinkActive="active-nav-link"
               [routerLinkActiveOptions]="{ exact: item.exact }"
-              class="nav-link-base group"
+              class="nav-link-base group relative"
               [title]="item.label"
             >
               <span class="w-5 h-5 flex-shrink-0 transition-colors" [innerHTML]="item.iconSvg"></span>
               
               @if (!isCollapsed()) {
                 <div class="min-w-0 flex-1 text-left">
-                  <p class="text-sm font-semibold truncate leading-tight">{{ item.label }}</p>
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-semibold truncate leading-tight">{{ item.label }}</p>
+                    @if (item.route === '/citas' && appointmentService.unreadNotificationsCount() > 0) {
+                      <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-400 text-zinc-950">
+                        {{ appointmentService.unreadNotificationsCount() }}
+                      </span>
+                    }
+                    @if (item.route === '/clientes' && clientService.newClientsCount() > 0) {
+                      <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-400 text-zinc-950">
+                        {{ clientService.newClientsCount() }}
+                      </span>
+                    }
+                  </div>
                   <p class="text-[11px] text-zinc-400 group-hover:text-zinc-500 nav-sublabel truncate">{{ item.sublabel }}</p>
                 </div>
                 <span class="active-dot hidden w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -213,6 +222,8 @@ export class SidebarComponent {
   readonly authService = inject(AuthService);
   readonly permissions = inject(PermissionsService);
   readonly sidebarService = inject(SidebarService);
+  readonly appointmentService = inject(AppointmentService);
+  readonly clientService = inject(ClientService);
   private readonly router = inject(Router);
 
   readonly isCollapsed = this.sidebarService.isCollapsed;
@@ -225,6 +236,22 @@ export class SidebarComponent {
       exact: true,
       visible: () => true,
       iconSvg: '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
+    },
+    {
+      label: 'Agenda de Citas',
+      sublabel: 'Calendario & Citas',
+      route: '/citas',
+      exact: false,
+      visible: () => this.permissions.canManageAppointments(),
+      iconSvg: '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" /></svg>',
+    },
+    {
+      label: 'Base de Clientes',
+      sublabel: 'Prospectos & Leads',
+      route: '/clientes',
+      exact: false,
+      visible: () => this.permissions.canManageClients(),
+      iconSvg: '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>',
     },
     {
       label: 'Pacientes & Flujo',
@@ -242,14 +269,22 @@ export class SidebarComponent {
       visible: () => this.permissions.canViewExpenses(),
       iconSvg: '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>',
     },
+    {
+      label: 'Auditoría & Logs',
+      sublabel: 'Trazabilidad & Eventos',
+      route: '/auditoria',
+      exact: true,
+      visible: () => this.permissions.canManageAppointments(),
+      iconSvg: '<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>',
+    },
   ];
 
   readonly mainNavItems = computed(() =>
-    this.allNavItems.filter(item => (item.route === '/dashboard' || item.route === '/pacientes') && item.visible())
+    this.allNavItems.filter(item => (item.route === '/dashboard' || item.route === '/citas' || item.route === '/clientes' || item.route === '/pacientes') && item.visible())
   );
 
   readonly financeNavItems = computed(() =>
-    this.allNavItems.filter(item => item.route === '/gastos' && item.visible())
+    this.allNavItems.filter(item => (item.route === '/gastos' || item.route === '/auditoria') && item.visible())
   );
 
   toggleCollapse(): void {

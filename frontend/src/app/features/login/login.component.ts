@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { User, ROLE_LABELS } from '../../core/models/user.model';
@@ -8,7 +8,7 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="min-h-screen bg-zinc-100/90 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       
@@ -27,26 +27,22 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
                 Acceso Rápido
               </h2>
               <p class="text-sm text-zinc-500 mt-1">
-                Selecciona un perfil:
+                Haz clic en un perfil para ingresar directamente:
               </p>
             </div>
 
-            <!-- User Cards List (Sin textos redundantes, más espacioso y claro) -->
+            <!-- User Cards List -->
             <div class="space-y-2.5 pt-1">
               @for (user of mockUsers; track user.id) {
                 <div
                   (click)="selectUser(user)"
-                  class="p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer text-left relative group"
-                  [ngClass]="selectedUser()?.id === user.id 
-                    ? 'bg-white border-zinc-950 ring-2 ring-zinc-950 shadow-xs' 
-                    : 'bg-white/80 border-zinc-200/90 hover:bg-white hover:border-zinc-300'"
+                  class="p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer text-left relative group bg-white/90 border-zinc-200/90 hover:bg-white hover:border-zinc-950 hover:shadow-md hover:scale-[1.01]"
                 >
                   <div class="flex items-center justify-between gap-3">
                     <!-- User Avatar + Info -->
                     <div class="flex items-center gap-3 min-w-0">
                       <div
-                        class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-colors"
-                        [ngClass]="selectedUser()?.id === user.id ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-700 group-hover:bg-zinc-200'"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-colors bg-zinc-100 text-zinc-700 group-hover:bg-zinc-950 group-hover:text-white"
                       >
                         {{ user.name.charAt(0) }}
                       </div>
@@ -61,17 +57,11 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
                       </div>
                     </div>
 
-                    <!-- Badge / Selector -->
-                    @if (selectedUser()?.id === user.id) {
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-950 text-white flex-shrink-0">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        Elegido
-                      </span>
-                    } @else {
-                      <span class="text-xs sm:text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors font-medium">
-                        Elegir →
-                      </span>
-                    }
+                    <!-- Direct Access CTA -->
+                    <span class="text-xs sm:text-sm font-bold text-zinc-400 group-hover:text-zinc-950 transition-colors flex items-center gap-1">
+                      <span>Ingresar</span>
+                      <span class="transition-transform group-hover:translate-x-0.5">→</span>
+                    </span>
                   </div>
                 </div>
               }
@@ -87,17 +77,17 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
           <div class="w-full max-w-md space-y-6">
             
             <!-- Clinic Branding & Title -->
-            <div class="text-center sm:text-left space-y-1.5">
-              <div class="inline-flex items-center justify-center w-11 h-11 bg-zinc-950 rounded-2xl shadow-xs border border-zinc-800 mb-1.5">
-                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-                </svg>
+            <div class="text-center sm:text-left space-y-2">
+              <div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-950 uppercase">
+                  Mantra Group
+                </h1>
+                <p class="text-xs sm:text-sm font-bold tracking-wide text-amber-700/90 uppercase mt-1">
+                  Centro Estético Corporal y Facial
+                </p>
               </div>
-              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
-                Iniciar Sesión
-              </h1>
-              <p class="text-sm text-zinc-500">
-                Estética Clinic
+              <p class="text-xs text-zinc-400 font-medium pt-1">
+                Portal clínico de gestión médica, estética y terapéutica.
               </p>
             </div>
 
@@ -172,6 +162,15 @@ import { User, ROLE_LABELS } from '../../core/models/user.model';
               >
                 Iniciar Sesión
               </button>
+
+              <div class="text-center pt-2">
+                <a
+                  routerLink="/"
+                  class="text-xs font-semibold text-zinc-400 hover:text-zinc-800 transition-colors"
+                >
+                  ← Volver a la Landing de Pacientes
+                </a>
+              </div>
             </form>
 
           </div>
@@ -200,11 +199,17 @@ export class LoginComponent {
     this.selectedUser.set(user);
     this.errorMessage.set('');
 
-    // Pre-populate the form for seamless prototype testing
+    // Pre-populate the form
     this.loginForm.patchValue({
       email: user.email,
       password: 'password123',
     });
+
+    // Auto-login and navigate immediately to dashboard
+    const success = this.authService.login(user.email, 'password123');
+    if (success) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onLogin(): void {

@@ -33,12 +33,31 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['gerente', 'administradora'])],
   },
   {
+    path: 'citas',
+    loadComponent: () =>
+      import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent),
+    canActivate: [authGuard, roleGuard(['gerente', 'administradora'])],
+  },
+  {
+    path: 'clientes',
+    loadComponent: () =>
+      import('./features/clients/clients.component').then(m => m.ClientsComponent),
+    canActivate: [authGuard, roleGuard(['gerente', 'administradora'])],
+  },
+  {
+    path: 'auditoria',
+    loadComponent: () =>
+      import('./features/audit/audit.component').then(m => m.AuditComponent),
+    canActivate: [authGuard, roleGuard(['gerente', 'administradora'])],
+  },
+  {
     path: '',
-    redirectTo: 'login',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then(m => m.LandingComponent),
     pathMatch: 'full',
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: '',
   },
 ];

@@ -1,8 +1,10 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { User, UserRole } from '../models/user.model';
+import { AuditService } from './audit.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly audit = inject(AuditService);
   private readonly _currentUser = signal<User | null>(null);
   private readonly _isAuthenticated = computed(() => this._currentUser() !== null);
 
@@ -50,12 +52,33 @@ export class AuthService {
     const user = this.mockUsers.find(u => u.email === email);
     if (user) {
       this._currentUser.set(user);
+      this.audit.log({
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role.toUpperCase(),
+        entityType: 'AUTH',
+        action: 'LOGIN',
+        entityId: user.id,
+        details: `Inicio de sesión exitoso en el sistema como ${user.role.toUpperCase()} (${user.email}).`,
+      });
       return true;
     }
     return false;
   }
 
   logout(): void {
+    const user = this._currentUser();
+    if (user) {
+      this.audit.log({
+        userId: user.id,
+        userName: user.name,
+        userRole: user.role.toUpperCase(),
+        entityType: 'AUTH',
+        action: 'LOGOUT',
+        entityId: user.id,
+        details: `Cierre de sesión de usuario ${user.name} (${user.role.toUpperCase()}).`,
+      });
+    }
     this._currentUser.set(null);
   }
 

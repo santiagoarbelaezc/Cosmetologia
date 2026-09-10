@@ -125,6 +125,21 @@ export class PermissionsService {
     this.is('gerente')
   );
 
+  /** Can manage appointments and public scheduling (Gerente & Administradora) */
+  readonly canManageAppointments = computed(() =>
+    this.is('gerente', 'administradora')
+  );
+
+  /** Can manage client directory and leads (Gerente & Administradora) */
+  readonly canManageClients = computed(() =>
+    this.is('gerente', 'administradora')
+  );
+
+  /** Check if current session is a client role */
+  readonly isClient = computed(() =>
+    this.is('cliente')
+  );
+
   // ─── Helpers ────────────────────────────────────────────
 
   private is(...roles: UserRole[]): boolean {

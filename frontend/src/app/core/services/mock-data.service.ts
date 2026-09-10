@@ -1,9 +1,13 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { Patient, Treatment, ClinicalSession, MedicalRecord, TreatmentCategory } from '../models/patient.model';
 import { PaymentRecord, ExpenseItem, AccountBalance, FinancialSummary } from '../models/finance.model';
+import { AuditService } from './audit.service';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class MockDataService {
+  private readonly audit = inject(AuditService);
+  private readonly auth = inject(AuthService);
 
   // ─── Patients ───────────────────────────────────────────────
   private readonly _patients = signal<Patient[]>([
@@ -371,6 +375,32 @@ export class MockDataService {
     };
   }
 
+  addPatient(patient: Omit<Patient, 'id' | 'createdAt'>): Patient {
+    const newId = `pat-${String(this._patients().length + 1).padStart(3, '0')}`;
+    const newPatient: Patient = {
+      ...patient,
+      id: newId,
+      createdAt: new Date().toISOString().split('T')[0],
+      treatments: patient.treatments || [],
+      clinicalHistory: patient.clinicalHistory || [],
+    };
+
+    this._patients.update(list => [...list, newPatient]);
+
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || 'staff',
+      userName: currentUser?.name || 'Administración',
+      userRole: currentUser?.role || 'Administradora',
+      entityType: 'PATIENT',
+      action: 'CREATE',
+      entityId: newId,
+      details: `Creación de expediente clínico para ${newPatient.firstName} ${newPatient.lastName} (Doc: ${newPatient.documentId}).`,
+    });
+
+    return newPatient;
+  }
+
   addPayment(payment: Omit<PaymentRecord, 'id'>): void {
     const newPayment: PaymentRecord = {
       ...payment,
@@ -392,6 +422,18 @@ export class MockDataService {
         };
       })
     );
+
+    const patient = this.getPatientById(payment.patientId);
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || 'staff',
+      userName: currentUser?.name || payment.registeredBy || 'Administración',
+      userRole: currentUser?.role || 'Administradora',
+      entityType: 'PAYMENT',
+      action: 'CREATE',
+      entityId: newPayment.id,
+      details: `Registro de abono de $${payment.amount.toLocaleString()} (${payment.method}) para ${patient ? patient.firstName + ' ' + patient.lastName : 'paciente'}.`,
+    });
   }
 
   addExpense(expense: Omit<ExpenseItem, 'id'>): void {
@@ -400,6 +442,17 @@ export class MockDataService {
       id: `exp-${String(this._expenses().length + 1).padStart(3, '0')}`,
     };
     this._expenses.update(expenses => [...expenses, newExpense]);
+
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || 'staff',
+      userName: currentUser?.name || expense.registeredBy || 'Gerencia',
+      userRole: currentUser?.role || 'Gerente',
+      entityType: 'EXPENSE',
+      action: 'CREATE',
+      entityId: newExpense.id,
+      details: `Registro de egreso de caja: ${expense.concept} por valor de $${expense.amount.toLocaleString()} (${expense.category}).`,
+    });
   }
 
   addClinicalEvolution(patientId: string, evolution: Omit<ClinicalSession, 'id'>): void {
@@ -426,6 +479,18 @@ export class MockDataService {
         };
       })
     );
+
+    const patient = this.getPatientById(patientId);
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || evolution.specialistId,
+      userName: currentUser?.name || evolution.specialistName,
+      userRole: currentUser?.role || 'Especialista',
+      entityType: 'TREATMENT',
+      action: 'CREATE',
+      entityId: newSession.id,
+      details: `Registro de sesión de evolución #${evolution.sessionNumber} (${evolution.treatmentName}) para ${patient ? patient.firstName + ' ' + patient.lastName : 'paciente'}.`,
+    });
   }
 
   saveMedicalRecord(patientId: string, record: MedicalRecord): void {
@@ -441,6 +506,18 @@ export class MockDataService {
         };
       })
     );
+
+    const patient = this.getPatientById(patientId);
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || 'usr-003',
+      userName: currentUser?.name || record.registradoPor || 'Dr. Andrés Castaño',
+      userRole: currentUser?.role || 'Médico',
+      entityType: 'PATIENT',
+      action: 'UPDATE',
+      entityId: patientId,
+      details: `Actualización de antecedentes e historia médica para ${patient ? patient.firstName + ' ' + patient.lastName : 'paciente'}.`,
+    });
   }
 
   prescribeTreatment(
@@ -491,5 +568,17 @@ export class MockDataService {
         };
       })
     );
+
+    const patient = this.getPatientById(patientId);
+    const currentUser = this.auth.currentUser();
+    this.audit.log({
+      userId: currentUser?.id || doctorId,
+      userName: currentUser?.name || doctorName,
+      userRole: currentUser?.role || 'Médico',
+      entityType: 'TREATMENT',
+      action: 'CREATE',
+      entityId: newTreatmentId,
+      details: `Prescripción médica de ${treatmentData.name} para ${patient ? patient.firstName + ' ' + patient.lastName : 'paciente'}.`,
+    });
   }
 }

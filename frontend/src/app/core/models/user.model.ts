@@ -1,4 +1,4 @@
-export type UserRole = 'gerente' | 'administradora' | 'medico' | 'cosmetologa';
+export type UserRole = 'gerente' | 'administradora' | 'medico' | 'cosmetologa' | 'cliente';
 
 export interface User {
   id: string;
@@ -24,4 +24,5 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   administradora: 'Administradora',
   medico: 'Médico',
   cosmetologa: 'Cosmetóloga',
+  cliente: 'Cliente / Paciente',
 };
